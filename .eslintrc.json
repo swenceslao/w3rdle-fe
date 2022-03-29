@@ -20,5 +20,13 @@
     ],
     "rules": {
         "react/jsx-filename-extension": [1, { "extensions": [".js"] }]
+    },
+    "settings": {
+        "import/resolver": {
+          "node": {
+            "extensions": [".js", ".jsx", ".ts", ".tsx"],
+            "moduleDirectory": ["src", "node_modules"]
+          }
+        }
     }
 }

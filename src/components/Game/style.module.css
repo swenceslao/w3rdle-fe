@@ -1,3 +1,4 @@
 .game {
     width: min(600px, 80vw);
+    min-height: 80%;
 }

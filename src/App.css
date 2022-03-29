@@ -24,8 +24,9 @@
 
 .app {
   text-align: center;
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
   min-height: 100vh;
   padding: 0; margin: 0;
 }

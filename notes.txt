@@ -1,0 +1,2 @@
+1. Need ABI(.json)
+2. Need contract address
