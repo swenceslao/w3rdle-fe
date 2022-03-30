@@ -11,6 +11,7 @@ function NavBar({
     <div className="navbar flex w-100 justify-between items-center pt-5 py-3 sm:pt-3 text-black dark:text-white">
       <HelpOutlineIcon
         onClick={() => help(true)}
+        sx={{ cursor: 'pointer' }}
       />
       <Stack>
         <h1 className="text-3xl font-bold tracking-wider">W3RDL3</h1>

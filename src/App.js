@@ -71,11 +71,9 @@ function App() {
 
   return (
     <div className="app dark:bg-zinc-800">
-      {openHelp && (
-        <Modal title="How to play!" help={setOpenHelp}>
-          <Help />
-        </Modal>
-      )}
+      <Modal title="How to play!" open={openHelp} onOpenClose={setOpenHelp}>
+        <Help />
+      </Modal>
       {error && <Error>{error}</Error>}
       <div className={styles.game}>
         <NavBar

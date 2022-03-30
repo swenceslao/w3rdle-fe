@@ -26,11 +26,12 @@ function Settings({ dark, darkness }) {
       <SettingsIcon
         onClick={handleClick}
         className="text-black dark:text-white"
+        sx={{ cursor: 'pointer' }}
       />
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <FormControlLabel
           className="pl-3.5 text-slate-600"
-          control={<Switch onChange={handleChange} />}
+          control={<Switch checked={dark} onChange={handleChange} />}
           label="Dark mode"
         />
       </Menu>
