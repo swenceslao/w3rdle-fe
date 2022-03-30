@@ -52,7 +52,7 @@ function Help() {
       <p className="text-left text-sm sm:text-base py-2 opacity-75">
         The letter
         {' '}
-        <b>S</b>
+        <strong>S</strong>
         {' '}
         is in the word and in the correct spot.
       </p>
@@ -66,9 +66,9 @@ function Help() {
       <p className="text-left text-sm sm:text-base py-2 opacity-75">
         The letter
         {' '}
-        <b>M</b>
+        <strong>M</strong>
         {' '}
-        is in the word and in the correct spot.
+        is in the word but in the wrong spot.
       </p>
       <div className="flex gap-1">
         <Box value="F" />
@@ -80,9 +80,9 @@ function Help() {
       <p className="text-left text-sm sm:text-base py-2 opacity-75">
         The letter
         {' '}
-        <b>N</b>
+        <strong>N</strong>
         {' '}
-        is in the word and in the correct spot.
+        is not in the word.
       </p>
     </>
   );

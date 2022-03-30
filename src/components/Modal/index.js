@@ -5,7 +5,7 @@ import { Fade } from '@mui/material';
 import '../../App.css';
 
 function Modal({
-  title, open, onOpenClose, children,
+  title, open, setClose, children,
 }) {
   return (
     <Fade in={open}>
@@ -18,7 +18,7 @@ function Modal({
             <CloseIcon className="text-white dark:text-zinc-800" />
             <h2 className="font-black text-2xl">{title}</h2>
             <CloseIcon
-              onClick={() => onOpenClose(false)}
+              onClick={setClose}
               sx={{ cursor: 'pointer' }}
             />
           </div>
@@ -28,7 +28,7 @@ function Modal({
         </div>
         <div
           className="bg-neutral-200 dark:bg-gray-700 opacity-80 z-0 absolute w-full h-full grid place-center"
-          onClick={() => onOpenClose(false)}
+          onClick={setClose}
           role="none"
         />
       </div>
@@ -39,8 +39,8 @@ function Modal({
 Modal.propTypes = {
   title: PropTypes.string.isRequired,
   open: PropTypes.bool.isRequired,
-  onOpenClose: PropTypes.func.isRequired,
-  children: PropTypes.instanceOf(Array).isRequired,
+  setClose: PropTypes.func.isRequired,
+  children: PropTypes.instanceOf(Object).isRequired,
 };
 
 export default Modal;

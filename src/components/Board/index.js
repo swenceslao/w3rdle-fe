@@ -21,7 +21,7 @@ for (let i = 0; i < 6; i += 1) {
 }
 
 function Board({
-  clicks, error, singleLetter, letters,
+  win, setWin, clicks, error, singleLetter, letters,
 }) {
   console.log({ correct });
   const [boardLetters, setBoardLetters] = useState(defaultLetters);
@@ -29,7 +29,6 @@ function Board({
   const [changed, setChanged] = useState(false);
   const [row, setRow] = useState(0);
   const [col, setCol] = useState(0);
-  const [win, setWin] = useState(false);
   const [lost, setLost] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -138,6 +137,8 @@ Board.defaultProps = {
 };
 
 Board.propTypes = {
+  win: PropTypes.bool.isRequired,
+  setWin: PropTypes.func.isRequired,
   clicks: PropTypes.number.isRequired,
   error: PropTypes.func.isRequired,
   singleLetter: PropTypes.string,

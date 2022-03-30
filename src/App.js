@@ -71,7 +71,11 @@ function App() {
 
   return (
     <div className="app dark:bg-zinc-800">
-      <Modal title="How to play!" open={openHelp} onOpenClose={setOpenHelp}>
+      <Modal
+        title="How to play!"
+        open={openHelp}
+        setClose={() => setOpenHelp(false)}
+      >
         <Help />
       </Modal>
       {error && <Error>{error}</Error>}

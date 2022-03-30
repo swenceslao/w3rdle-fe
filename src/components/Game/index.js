@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import Board from '../Board';
-import KeyBoard from '../KeyBoard';
+import Modal from 'components/Modal';
+import Board from 'components/Board';
+import KeyBoard from 'components/KeyBoard';
+import Help from 'components/Help';
 import styles from './style.module.css';
 
 function Game({ setError }) {
@@ -9,6 +11,7 @@ function Game({ setError }) {
   const [changed, setChanged] = useState(false);
   const [letters, setLetters] = useState({});
   const [clicked, setClicked] = useState(0);
+  const [win, setWin] = useState(false);
 
   const onClickDown = (event) => {
     if (event.key === 'Enter') {
@@ -38,15 +41,26 @@ function Game({ setError }) {
     setChanged(!changed);
   };
   return (
-    <div className={styles.game}>
-      <Board
-        singleLetter={singleLetter}
-        clicks={clicked}
-        letters={lettersHandler}
-        error={setError}
-      />
-      <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
-    </div>
+    <>
+      <Modal
+        title="You won!"
+        open={win}
+        setClose={() => setWin(false)}
+      >
+        <Help />
+      </Modal>
+      <div className={styles.game}>
+        <Board
+          singleLetter={singleLetter}
+          clicks={clicked}
+          letters={lettersHandler}
+          error={setError}
+          win={win}
+          setWin={setWin}
+        />
+        <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
+      </div>
+    </>
   );
 }
 
