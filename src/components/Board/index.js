@@ -1,10 +1,11 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Box from '../Box';
-import words from '../../words';
+import words from 'words';
+import Box from 'components/Box';
 
-const correct = 'CHANT';
+const random = Math.floor(Math.random() * words.length);
+const correct = words[random].toUpperCase();
 const defaultBoard = [];
 const defaultLetters = [];
 
@@ -22,6 +23,7 @@ for (let i = 0; i < 6; i += 1) {
 function Board({
   clicks, error, singleLetter, letters,
 }) {
+  console.log({ correct });
   const [boardLetters, setBoardLetters] = useState(defaultLetters);
   const [board, setBoard] = useState(defaultBoard);
   const [changed, setChanged] = useState(false);

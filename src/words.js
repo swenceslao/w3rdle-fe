@@ -1237,6 +1237,7 @@ const words = [
   'heart',
   'heats',
   'heavy',
+  'hello',
   'hefts',
   'hefty',
   'heirs',
