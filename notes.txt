@@ -1,2 +1,7 @@
 1. Need ABI(.json)
 2. Need contract address
+
+
+1. /random -> get random words
+2. user plays (15 minutes)
+3. once nanalo, Express calls /minted to lock the word. If true, proceed to #4. If false, show error message that user is not authorized, 
