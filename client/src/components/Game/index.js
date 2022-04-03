@@ -12,6 +12,7 @@ function Game({ setError }) {
   const [letters, setLetters] = useState({});
   const [clicked, setClicked] = useState(0);
   const [win, setWin] = useState(false);
+  const [correctWord, setCorrectWord] = useState('');
 
   const onClickDown = (event) => {
     if (event.key === 'Enter') {
@@ -25,13 +26,6 @@ function Game({ setError }) {
       setClicked(clicked + 1);
     }
   };
-
-  useEffect(() => {
-    window.addEventListener('keydown', onClickDown);
-
-    return () => window.removeEventListener('keydown', onClickDown);
-  });
-
   const keyHandler = (letterValue) => {
     setSingleLetter(letterValue);
     setClicked(clicked + 1);
@@ -40,6 +34,23 @@ function Game({ setError }) {
     setLetters(lettersValue);
     setChanged(!changed);
   };
+
+  useEffect(() => {
+    window.addEventListener('keydown', onClickDown);
+
+    return () => window.removeEventListener('keydown', onClickDown);
+  });
+
+  useEffect(() => {
+    const getRandomWord = async () => {
+      const response = await fetch('/random');
+      const { currentWord } = await response.json();
+      console.log({ currentWord });
+      setCorrectWord(currentWord);
+    };
+    getRandomWord();
+  }, []);
+
   return (
     <>
       <Modal
@@ -57,6 +68,7 @@ function Game({ setError }) {
           error={setError}
           win={win}
           setWin={setWin}
+          correct={correctWord}
         />
         <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
       </div>

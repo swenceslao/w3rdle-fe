@@ -1,11 +1,8 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import words from 'words';
 import Box from 'components/Box';
 
-const random = Math.floor(Math.random() * words.length);
-const correct = words[random].toUpperCase();
 const defaultBoard = [];
 const defaultLetters = [];
 
@@ -21,9 +18,8 @@ for (let i = 0; i < 6; i += 1) {
 }
 
 function Board({
-  win, setWin, clicks, error, singleLetter, letters,
+  win, setWin, clicks, error, singleLetter, letters, correct,
 }) {
-  console.log({ correct });
   const [boardLetters, setBoardLetters] = useState(defaultLetters);
   const [board, setBoard] = useState(defaultBoard);
   const [changed, setChanged] = useState(false);
@@ -59,52 +55,52 @@ function Board({
             }
           } else if (singleLetter === 'ENTER') {
             let correctLetters = 0;
-            let word = '';
+            // let word = '';
+            // for (let i = 0; i < 5; i += 1) {
+            //   word += prevBoardCopy[row][i][0];
+            // }
+            // if (words.includes(word.toLowerCase())) {
             for (let i = 0; i < 5; i += 1) {
-              word += prevBoardCopy[row][i][0];
-            }
-            if (words.includes(word.toLowerCase())) {
-              for (let i = 0; i < 5; i += 1) {
-                if (correct[i] === prevBoardCopy[row][i][0]) {
-                  prevBoardCopy[row][i][1] = 'C';
-                  correctLetters += 1;
-                } else if (correct.includes(prevBoardCopy[row][i][0])) {
-                  prevBoardCopy[row][i][1] = 'E';
-                } else {
-                  prevBoardCopy[row][i][1] = 'N';
-                }
-
-                setRow(row + 1);
-
-                if (row === 5) {
-                  setLost(true);
-                  setTimeout(() => {
-                    setMessage(`It was ${correct}`);
-                  }, 750);
-                }
-
-                setCol(0);
-                setBoardLetters((prev) => {
-                  const prevCopy = prev.slice();
-                  // eslint-disable-next-line prefer-destructuring
-                  prevCopy[board[row][i][0]] = board[row][i][1];
-                  return prev;
-                });
+              if (correct[i] === prevBoardCopy[row][i][0]) {
+                prevBoardCopy[row][i][1] = 'C';
+                correctLetters += 1;
+              } else if (correct.includes(prevBoardCopy[row][i][0])) {
+                prevBoardCopy[row][i][1] = 'E';
+              } else {
+                prevBoardCopy[row][i][1] = 'N';
               }
-              setChanged(!changed);
 
-              if (correctLetters === 5) {
-                setWin(true);
+              setRow(row + 1);
+
+              if (row === 5) {
+                setLost(true);
                 setTimeout(() => {
-                  setMessage('You WIN');
+                  setMessage(`It was ${correct}`);
                 }, 750);
               }
-              return prevBoard;
+
+              setCol(0);
+              setBoardLetters((prev) => {
+                const prevCopy = prev.slice();
+                // eslint-disable-next-line prefer-destructuring
+                prevCopy[board[row][i][0]] = board[row][i][1];
+                return prev;
+              });
             }
-            error('Word not in dictionary');
-            setTimeout(() => {
-              error('');
-            }, 1000);
+            setChanged(!changed);
+
+            if (correctLetters === 5) {
+              setWin(true);
+              setTimeout(() => {
+                setMessage('You WIN');
+              }, 750);
+            }
+            return prevBoard;
+            // }
+            // error('Word not in dictionary');
+            // setTimeout(() => {
+            //   error('');
+            // }, 1000);
           }
           return prevBoard;
         });
@@ -134,6 +130,7 @@ function Board({
 
 Board.defaultProps = {
   singleLetter: '',
+  correct: '',
 };
 
 Board.propTypes = {
@@ -143,6 +140,7 @@ Board.propTypes = {
   error: PropTypes.func.isRequired,
   singleLetter: PropTypes.string,
   letters: PropTypes.func.isRequired,
+  correct: PropTypes.string,
 };
 
 export default Board;
