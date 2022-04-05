@@ -1,17 +1,21 @@
 {
-  "name": "w3rdle",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "concurrently \"cd server && nodemon server\" \"cd client && npm start\""
+  },
+  "name": "w3rdle-fe",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swenceslao/w3rdle-fe.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "express": "^4.17.3"
+  "bugs": {
+    "url": "https://github.com/swenceslao/w3rdle-fe/issues"
   },
-  "type": "module"
+  "homepage": "https://github.com/swenceslao/w3rdle-fe#readme",
+  "description": ""
 }
