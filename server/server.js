@@ -1,7 +1,9 @@
 import express from 'express';
+import cors from 'cors';
 import words from './words.js';
 
 const app = express();
+app.use(cors());
 const port = process.env.PORT || 5001;
 
 // This displays message that the server running and listening to specified port
