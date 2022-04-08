@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { ethers } from 'ethers';
 import getUnixTime from 'date-fns/getUnixTime';
+import { Typography } from '@mui/material';
 import { useLocalstorage } from 'rooks';
 import NavBar from 'components/NavBar';
 import Game from 'components/Game';
@@ -10,10 +11,19 @@ import Error from 'components/Error';
 import Modal from 'components/Modal';
 import Help from 'components/Help';
 import styles from 'components/Game/style.module.css';
+import W3rdl3 from 'components/Web3/W3rdl3.json';
+import MetaMaskButton from 'components/Web3/MetaMaskButton';
+
+const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 
 function App() {
-  const [playSession, setPlaySession] = useLocalstorage('w3rdle_play_session', {});
+  const [playSession, setPlaySession] = useLocalstorage('w3rdl3_play_session', {});
+  const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
+  const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
+  const [signerAddress, setSignerAddress] = useState('');
+  const [signer, setSigner] = useState('');
+  const [erc20Contract, setErc20Contract] = useState(null);
   const [windowEthStatus, setWindowEthStatus] = useState('unavailable');
   const [openHelp, setOpenHelp] = useState(false);
   const [dark, setDark] = useState(false);
@@ -36,16 +46,47 @@ function App() {
           }],
         });
         await provider.send('eth_requestAccounts', []);
-        const signer = await provider.getSigner();
-        const signerAddress = await signer.getAddress();
-        console.log({ signer, signerAddress });
-        setPlaySession({
-          sessionStarted: getUnixTime(new Date()),
-          playerAddress: signerAddress,
-        });
+        const ethSigner = await provider.getSigner();
+        const ethSignerAddress = await ethSigner.getAddress();
+        setSigner(ethSigner);
+        setSignerAddress(ethSignerAddress);
+
+        console.log({ CONTRACT_ADDRESS, ethSigner, ethSignerAddress });
+
+        const erc20 = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          W3rdl3.abi,
+          provider,
+        );
+
+        setErc20Contract(erc20);
+
+        const mintPriceHex = await erc20.ongoingMintPrice();
+        const readableMintPrice = ethers.utils.formatEther(mintPriceHex);
+        setOngoingMintPrice(parseFloat(readableMintPrice));
+        setMetamaskText('Pay With MetaMask Wallet');
+
+        // setPlaySession({
+        //   sessionStarted: getUnixTime(new Date()),
+        //   playerAddress: signerAddress,
+        // });
       } else {
-        console.log('MetaMask is unavailable');
+        setMetamaskText('MetaMask unavailable');
       }
+    } catch (e) {
+      console.error({ e });
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const registerRes = await signer.sendTransaction({
+        to: CONTRACT_ADDRESS,
+        from: signerAddress,
+        value: ethers.utils.parseEther(ongoingMintPrice.toString()),
+      });
+      // const registerRes = await erc20.Register();
+      console.log({ registerRes });
     } catch (e) {
       console.error({ e });
     }
@@ -54,8 +95,10 @@ function App() {
   useEffect(() => {
     if (!window.ethereum) {
       setWindowEthStatus('unavailable');
+      setMetamaskText('MetaMask unavailable');
     } else {
       setWindowEthStatus('available');
+      setMetamaskText('Connect MetaMask Wallet');
     }
   }, []);
 
@@ -92,8 +135,25 @@ function App() {
         />
       </div>
       {!isRegistered
-        ? <RegisterInfoComponent windowEthStatus={windowEthStatus} handleConnect={handleConnect} />
-        : <Game darkness={darkHandler} setError={setError} /> }
+        ? (
+          <>
+            <RegisterInfoComponent />
+            {Boolean(ongoingMintPrice) && (
+              <Typography variant="p" className="text-black dark:text-white">
+                Mint price:
+                {' '}
+                {ongoingMintPrice}
+                MATIC
+              </Typography>
+            )}
+            <MetaMaskButton
+              status={windowEthStatus}
+              onVerify={ongoingMintPrice ? handleRegister : handleConnect}
+              text={metamaskText}
+            />
+          </>
+        )
+        : <Game darkness={darkHandler} setError={setError} />}
     </div>
   );
 }

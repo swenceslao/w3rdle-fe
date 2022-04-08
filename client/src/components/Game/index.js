@@ -6,6 +6,7 @@ import KeyBoard from 'components/KeyBoard';
 import Help from 'components/Help';
 import styles from './style.module.css';
 
+const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
 function Game({ setError }) {
   const [singleLetter, setSingleLetter] = useState('');
   const [changed, setChanged] = useState(false);
@@ -43,7 +44,7 @@ function Game({ setError }) {
 
   useEffect(() => {
     const getRandomWord = async () => {
-      const response = await fetch('/random');
+      const response = await fetch(`${W3RDL3_API_URL}/random`);
       const { currentWord } = await response.json();
       console.log({ currentWord });
       setCorrectWord(currentWord);
