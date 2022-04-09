@@ -15,6 +15,7 @@ import W3rdl3 from 'components/Web3/W3rdl3.json';
 import MetaMaskButton from 'components/Web3/MetaMaskButton';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
+const WEI = 10e17;
 
 function App() {
   const [playSession, setPlaySession] = useLocalstorage('w3rdl3_play_session', {});
@@ -56,7 +57,7 @@ function App() {
         const erc20 = new ethers.Contract(
           CONTRACT_ADDRESS,
           W3rdl3.abi,
-          provider,
+          ethSigner,
         );
 
         setErc20Contract(erc20);
@@ -66,10 +67,27 @@ function App() {
         setOngoingMintPrice(parseFloat(readableMintPrice));
         setMetamaskText('Pay With MetaMask Wallet');
 
-        // setPlaySession({
-        //   sessionStarted: getUnixTime(new Date()),
-        //   playerAddress: signerAddress,
-        // });
+        // const params = {
+        //   value: 1000000000000000,
+        // };
+
+        // const params = {
+        //   value: readableMintPrice * WEI,
+        // };
+
+        // const registerRes = await erc20.register(params);
+        // const wait = await registerRes.wait(registerRes);
+        // console.log({ wait });
+        // const {
+        //   blockHash,
+        //   blockNumber,
+        //   transactionHash: txHash,
+        // } = wait;
+
+        // for hex https://string-functions.com/string-hex.aspx
+        // sample IPFS gateway URL: https://gateway.ipfs.io/ipfs/QmSfur2vFgWokHtbPobr6P3YLyiCnYjWVjMgdE5xuaAFLF/racer.png
+
+        // const mintWordRes = await erc20.mintWord(1, 0x776f726461);
       } else {
         setMetamaskText('MetaMask unavailable');
       }
@@ -80,13 +98,26 @@ function App() {
 
   const handleRegister = async () => {
     try {
-      const registerRes = await signer.sendTransaction({
-        to: CONTRACT_ADDRESS,
-        from: signerAddress,
-        value: ethers.utils.parseEther(ongoingMintPrice.toString()),
+      const registerRes = await erc20Contract.register({
+        value: ongoingMintPrice * WEI,
       });
-      // const registerRes = await erc20.Register();
-      console.log({ registerRes });
+      const wait = await registerRes.wait(registerRes);
+      console.log({ wait });
+      const {
+        blockHash,
+        blockNumber,
+        transactionHash: txHash,
+      } = wait;
+
+      setPlaySession({
+        sessionStarted: getUnixTime(new Date()),
+        playerAddress: signerAddress,
+        blockInfo: {
+          blockHash,
+          blockNumber,
+          txHash,
+        },
+      });
     } catch (e) {
       console.error({ e });
     }
@@ -143,6 +174,7 @@ function App() {
                 Mint price:
                 {' '}
                 {ongoingMintPrice}
+                {' '}
                 MATIC
               </Typography>
             )}
