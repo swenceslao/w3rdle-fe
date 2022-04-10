@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { ethers } from 'ethers';
 import getUnixTime from 'date-fns/getUnixTime';
-import { Typography } from '@mui/material';
+import { Box, Typography, Grow } from '@mui/material';
 import Board from 'components/Board';
 import KeyBoard from 'components/KeyBoard';
 import Error from 'components/Error';
 import MetaMaskButton from 'components/Web3/MetaMaskButton';
 import RegisterInfoComponent from 'components/Register';
+import Modal from 'components/Modal';
 import W3rdl3 from 'components/Web3/W3rdl3.json';
 import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 const WEI = 10e17;
-
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
+
 function Game({ playSession, setPlaySession }) {
   const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [signerAddress, setSignerAddress] = useState('');
   // eslint-disable-next-line no-unused-vars
-  const [signer, setSigner] = useState('');
   const [erc20Contract, setErc20Contract] = useState(null);
   const [windowEthStatus, setWindowEthStatus] = useState('unavailable');
   const [error, setError] = useState('');
@@ -29,7 +29,12 @@ function Game({ playSession, setPlaySession }) {
   const [changed, setChanged] = useState(false);
   const [letters, setLetters] = useState({});
   const [clicked, setClicked] = useState(0);
-  const [win, setWin] = useState(false);
+  const [winGame, setWinGame] = useState(false);
+  const [loadingResult, setLoadingResult] = useState(false);
+  const [restartGame, setRestartGame] = useState(false);
+  const [restartGameDialog, setRestartGameDialog] = useState(false);
+  const [wordMinted, setWordMinted] = useState(false);
+  const [loadingWord, setLoadingWord] = useState(false);
   const [correctWord, setCorrectWord] = useState('');
 
   const onClickDown = (event) => {
@@ -44,10 +49,12 @@ function Game({ playSession, setPlaySession }) {
       setClicked(clicked + 1);
     }
   };
+
   const keyHandler = (letterValue) => {
     setSingleLetter(letterValue);
     setClicked(clicked + 1);
   };
+
   const lettersHandler = (lettersValue) => {
     setLetters(lettersValue);
     setChanged(!changed);
@@ -68,7 +75,6 @@ function Game({ playSession, setPlaySession }) {
         await provider.send('eth_requestAccounts', []);
         const ethSigner = await provider.getSigner();
         const ethSignerAddress = await ethSigner.getAddress();
-        setSigner(ethSigner);
         setSignerAddress(ethSignerAddress);
         console.log({ CONTRACT_ADDRESS, ethSigner, ethSignerAddress });
 
@@ -82,26 +88,29 @@ function Game({ playSession, setPlaySession }) {
 
         const mintPriceHex = await erc20.ongoingMintPrice();
         const readableMintPrice = ethers.utils.formatEther(mintPriceHex);
-        console.log({ readableMintPrice });
-        setOngoingMintPrice(parseFloat(readableMintPrice));
+        const floatMintPrice = parseFloat(readableMintPrice);
+        setOngoingMintPrice(floatMintPrice);
         setMetamaskText('Pay With MetaMask Wallet');
 
-        // const params = {
-        //   value: 1000000000000000,
-        // };
+        const register = await erc20.register({
+          value: floatMintPrice * WEI,
+        });
+        const wait = await register.wait();
+        const {
+          blockHash,
+          blockNumber,
+          transactionHash: txHash,
+        } = wait;
 
-        // const params = {
-        //   value: readableMintPrice * WEI,
-        // };
-
-        // const registerRes = await erc20.register(params);
-        // const wait = await registerRes.wait(registerRes);
-        // console.log({ wait });
-        // const {
-        //   blockHash,
-        //   blockNumber,
-        //   transactionHash: txHash,
-        // } = wait;
+        setPlaySession({
+          sessionStarted: getUnixTime(new Date()),
+          playerAddress: signerAddress,
+          blockInfo: {
+            blockHash,
+            blockNumber,
+            txHash,
+          },
+        });
 
         // for hex https://string-functions.com/string-hex.aspx
         // sample IPFS gateway URL: https://gateway.ipfs.io/ipfs/QmSfur2vFgWokHtbPobr6P3YLyiCnYjWVjMgdE5xuaAFLF/racer.png
@@ -122,32 +131,19 @@ function Game({ playSession, setPlaySession }) {
     }
   };
 
-  const handleRegister = async () => {
+  const getRandomWord = useCallback(async () => {
+    setLoadingWord(true);
     try {
-      const register = await erc20Contract.register({
-        value: ongoingMintPrice * WEI,
-      });
-      const wait = await register.wait();
-      console.log({ wait });
-      const {
-        blockHash,
-        blockNumber,
-        transactionHash: txHash,
-      } = wait;
-
-      setPlaySession({
-        sessionStarted: getUnixTime(new Date()),
-        playerAddress: signerAddress,
-        blockInfo: {
-          blockHash,
-          blockNumber,
-          txHash,
-        },
-      });
+      const response = await fetch(`${W3RDL3_API_URL}/random_word`);
+      const { currentWord } = await response.json();
+      console.log({ currentWord });
+      setCorrectWord(currentWord);
     } catch (e) {
       console.error({ e });
+    } finally {
+      setLoadingWord(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (playSession && Object.keys(playSession).length > 0) {
@@ -156,18 +152,44 @@ function Game({ playSession, setPlaySession }) {
   }, [playSession]);
 
   useEffect(() => {
-    const getRandomWord = async () => {
-      const response = await fetch(`${W3RDL3_API_URL}/random`);
-      const { currentWord } = await response.json();
-      console.log({ currentWord });
-      setCorrectWord(currentWord);
-    };
     if (isRegistered) getRandomWord();
   }, [isRegistered]);
 
   useEffect(() => {
-    if (win) setPlaySession({});
-  }, [win]);
+    const mintWord = async () => {
+      setLoadingResult(true);
+      try {
+        const options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet_address: signerAddress,
+            word: correctWord,
+          }),
+        };
+        const response = await fetch(`${W3RDL3_API_URL}/minted`, options);
+        const { status } = response;
+        if (status === 200) {
+          setWordMinted(true);
+        } else {
+          setWordMinted(false);
+          setWinGame(false);
+          getRandomWord();
+          setRestartGame(true);
+          setRestartGameDialog(true);
+        }
+      } catch (e) {
+        console.error({ e });
+        setError('Something went wrong');
+      } finally {
+        setLoadingResult(false);
+      }
+    };
+    if (winGame) {
+      setPlaySession({});
+      mintWord();
+    }
+  }, [winGame]);
 
   useEffect(() => {
     window.addEventListener('keydown', onClickDown);
@@ -187,6 +209,32 @@ function Game({ playSession, setPlaySession }) {
 
   return (
     <>
+      <Modal
+        title="Word expired!"
+        open={restartGameDialog}
+        setClose={() => setRestartGameDialog(false)}
+      >
+        <p className="text-black dark:text-white">
+          Word has expired. Close this dialog to restart the game!
+        </p>
+      </Modal>
+      <Modal
+        title="Please wait..."
+        open={loadingResult}
+        setClose={() => setLoadingResult(false)}
+      >
+        <p className="text-black dark:text-white">
+          Finalizing game...
+        </p>
+      </Modal>
+      <Modal
+        title="You WIN!"
+        open={winGame && wordMinted}
+      >
+        <p className="text-black dark:text-white">
+          Congratulations!
+        </p>
+      </Modal>
       {error && <Error>{error}</Error>}
       {!isRegistered ? (
         <>
@@ -202,22 +250,37 @@ function Game({ playSession, setPlaySession }) {
           )}
           <MetaMaskButton
             status={windowEthStatus}
-            onVerify={ongoingMintPrice ? handleRegister : handleConnect}
+            onVerify={handleConnect}
             text={metamaskText}
           />
         </>
       ) : (
         <div className={styles.game}>
-          <Board
-            singleLetter={singleLetter}
-            clicks={clicked}
-            letters={lettersHandler}
-            error={setError}
-            win={win}
-            setWin={setWin}
-            correct={correctWord}
-          />
-          <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
+          <Grow in={loadingWord}>
+            <p className="text-black dark:text-white">
+              Loading word...
+            </p>
+          </Grow>
+          <Grow
+            in={!loadingWord}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...(!loadingWord ? { timeout: 500 } : {})}
+          >
+            <Box>
+              <Board
+                restartGame={restartGame}
+                setRestartGame={setRestartGame}
+                singleLetter={singleLetter}
+                clicks={clicked}
+                lettersHandler={lettersHandler}
+                error={setError}
+                win={winGame}
+                setWin={setWinGame}
+                correct={correctWord}
+              />
+              <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
+            </Box>
+          </Grow>
         </div>
       )}
     </>

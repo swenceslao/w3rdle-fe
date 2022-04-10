@@ -4,26 +4,38 @@ import PropTypes from 'prop-types';
 import Box from 'components/Box';
 import { GameContext } from 'context/GameContext';
 
-const defaultBoard = [];
-const defaultLetters = [];
+const initializeLetters = () => {
+  const defaultLetters = [];
+  'abcdefghijklmnopqrstuvwxyz'.split('').forEach((i) => {
+    defaultLetters[i] = '';
+  });
+  return defaultLetters;
+};
 
-'abcdefghijklmnopqrstuvwxyz'.split('').forEach((i) => {
-  defaultLetters[i] = '';
-});
-
-for (let i = 0; i < 6; i += 1) {
-  defaultBoard.push([]);
-  for (let j = 0; j < 5; j += 1) {
-    defaultBoard[i].push(['', '']);
+const initializeBoard = () => {
+  const defaultBoard = [];
+  for (let i = 0; i < 6; i += 1) {
+    defaultBoard.push([]);
+    for (let j = 0; j < 5; j += 1) {
+      defaultBoard[i].push(['', '']);
+    }
   }
-}
-
+  return defaultBoard;
+};
 function Board({
-  win, setWin, clicks, error, singleLetter, letters, correct,
+  restartGame,
+  setRestartGame,
+  win,
+  setWin,
+  clicks,
+  error,
+  singleLetter,
+  lettersHandler,
+  correct,
 }) {
   const { setTries } = useContext(GameContext);
-  const [boardLetters, setBoardLetters] = useState(defaultLetters);
-  const [board, setBoard] = useState(defaultBoard);
+  const [boardLetters, setBoardLetters] = useState(initializeLetters());
+  const [board, setBoard] = useState(initializeBoard());
   const [changed, setChanged] = useState(false);
   const [row, setRow] = useState(0);
   const [col, setCol] = useState(0);
@@ -115,8 +127,18 @@ function Board({
   }, [row]);
 
   useEffect(() => {
-    letters(boardLetters);
+    lettersHandler(boardLetters);
   }, [changed]);
+
+  useEffect(() => {
+    if (restartGame) {
+      setBoardLetters(initializeLetters());
+      setBoard(initializeBoard());
+      setRow(0);
+      setCol(0);
+      setRestartGame(false);
+    }
+  }, [restartGame]);
 
   return (
     <div className="px-10 py-5 grid gap-y-1 items-center w-100 justify-center">
@@ -140,12 +162,18 @@ Board.defaultProps = {
 };
 
 Board.propTypes = {
+  // board: PropTypes.arrayOf(PropTypes.instanceOf(Array)).isRequired,
+  // setBoard: PropTypes.func.isRequired,
+  // boardLetters: PropTypes.arrayOf(PropTypes.instanceOf(Array)).isRequired,
+  // setBoardLetters: PropTypes.func.isRequired,
+  restartGame: PropTypes.bool.isRequired,
+  setRestartGame: PropTypes.func.isRequired,
   win: PropTypes.bool.isRequired,
   setWin: PropTypes.func.isRequired,
   clicks: PropTypes.number.isRequired,
   error: PropTypes.func.isRequired,
   singleLetter: PropTypes.string,
-  letters: PropTypes.func.isRequired,
+  lettersHandler: PropTypes.func.isRequired,
   correct: PropTypes.string,
 };
 

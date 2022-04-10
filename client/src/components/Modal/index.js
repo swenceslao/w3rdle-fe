@@ -36,10 +36,14 @@ function Modal({
   );
 }
 
+Modal.defaultProps = {
+  setClose: () => {},
+};
+
 Modal.propTypes = {
   title: PropTypes.string.isRequired,
   open: PropTypes.bool.isRequired,
-  setClose: PropTypes.func.isRequired,
+  setClose: PropTypes.func,
   children: PropTypes.instanceOf(Object).isRequired,
 };
 

@@ -3,14 +3,33 @@ import PropTypes from 'prop-types';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 
 function Box({ value, state, pos }) {
-  const [cssState, setCssState] = useState('text-black border-2 border-gray-300 dark:bg-zinc-800 dark:text-white rounded');
+  const defaultCss = 'text-black border-2 border-gray-300 dark:bg-zinc-800 dark:text-white rounded';
+  const [cssState, setCssState] = useState(defaultCss);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (state === 'C') { setCssState('bg-correct text-white'); }
-      if (state === 'E') { setCssState('bg-exist text-white'); }
-      if (state === 'N') { setCssState('bg-wrong text-white dark:bg-gray-600'); }
-    }, 125 * pos);
+    if (state === 'C') {
+      setTimeout(() => {
+        setCssState('bg-correct text-white');
+      }, 125 * pos);
+    } else if (state === 'E') {
+      setTimeout(() => {
+        setCssState('bg-exist text-white');
+      }, 125 * pos);
+    } else if (state === 'N') {
+      setTimeout(() => {
+        setCssState('bg-wrong text-white');
+      }, 125 * pos);
+    } else {
+      setTimeout(() => {
+        setCssState(defaultCss);
+      }, 750);
+    }
+    // setTimeout(() => {
+    //   if (state === 'C') setCssState('bg-correct text-white');
+    //   else if (state === 'E') setCssState('bg-exist text-white');
+    //   else if (state === 'N') setCssState('bg-wrong text-white dark:bg-gray-600');
+    //   else setCssState(defaultCss);
+    // }, 125 * pos);
   }, [state]);
 
   return (
