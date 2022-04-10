@@ -1,7 +1,8 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Box from 'components/Box';
+import { GameContext } from 'context/GameContext';
 
 const defaultBoard = [];
 const defaultLetters = [];
@@ -20,6 +21,7 @@ for (let i = 0; i < 6; i += 1) {
 function Board({
   win, setWin, clicks, error, singleLetter, letters, correct,
 }) {
+  const { setTries } = useContext(GameContext);
   const [boardLetters, setBoardLetters] = useState(defaultLetters);
   const [board, setBoard] = useState(defaultBoard);
   const [changed, setChanged] = useState(false);
@@ -107,6 +109,10 @@ function Board({
       }
     }
   }, [clicks]);
+
+  useEffect(() => {
+    setTries(row);
+  }, [row]);
 
   useEffect(() => {
     letters(boardLetters);

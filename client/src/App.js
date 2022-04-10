@@ -23,6 +23,7 @@ function App() {
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [signerAddress, setSignerAddress] = useState('');
+  // eslint-disable-next-line no-unused-vars
   const [signer, setSigner] = useState('');
   const [erc20Contract, setErc20Contract] = useState(null);
   const [windowEthStatus, setWindowEthStatus] = useState('unavailable');
@@ -98,10 +99,10 @@ function App() {
 
   const handleRegister = async () => {
     try {
-      const registerRes = await erc20Contract.register({
+      const register = await erc20Contract.register({
         value: ongoingMintPrice * WEI,
       });
-      const wait = await registerRes.wait(registerRes);
+      const wait = await register.wait();
       console.log({ wait });
       const {
         blockHash,
@@ -185,7 +186,9 @@ function App() {
             />
           </>
         )
-        : <Game darkness={darkHandler} setError={setError} />}
+        : (
+          <Game setError={setError} />
+        )}
     </div>
   );
 }
