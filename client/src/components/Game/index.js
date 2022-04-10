@@ -19,8 +19,10 @@ import rocketAnimation from 'assets/lottie/rocket.json';
 import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
-const WEI = 10e17;
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
+// eslint-disable-next-line no-unused-vars
+const IPFS_GATEWAY = process.env.REACT_APP_IPFS_GATEWAY;
+const WEI = 10e17;
 
 function stringToHex(str) {
   const arr1 = [];
@@ -48,8 +50,6 @@ function Game({ playSession, setPlaySession }) {
   const [loadingResult, setLoadingResult] = useState(false);
   const [restartGame, setRestartGame] = useState(false);
   const [restartGameDialog, setRestartGameDialog] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [wordMinted, setWordMinted] = useState(false);
   const [loadingWord, setLoadingWord] = useState(false);
   const [correctWord, setCorrectWord] = useState('');
   const [finalSuccess, setFinalSuccess] = useState(false);
@@ -129,7 +129,6 @@ function Game({ playSession, setPlaySession }) {
           },
         });
 
-        // for hex https://string-functions.com/string-hex.aspx
         // sample IPFS gateway URL: https://gateway.ipfs.io/ipfs/QmSfur2vFgWokHtbPobr6P3YLyiCnYjWVjMgdE5xuaAFLF/racer.png
 
         // const mintWordRes = await erc20.mintWord(1, 0x776f726461);
@@ -190,13 +189,11 @@ function Game({ playSession, setPlaySession }) {
           const hex = `0x${stringToHex(correctWord)}`;
           const mintWordRes = await erc20Contract.mintWord(tries, hex);
           await mintWordRes.wait();
-          setWordMinted(true);
           setPlaySession({});
           setIsRegistered(false);
           setFinalSuccess(true);
           setPlayRocket(true);
         } else {
-          setWordMinted(false);
           setWinGame(false);
           getRandomWord();
           setRestartGame(true);
@@ -337,9 +334,14 @@ function Game({ playSession, setPlaySession }) {
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
           >
-            <p className="mt-5 text-black dark:text-white font-black text-2xl">
-              Congratulations!
-            </p>
+            <Box>
+              <p className="mt-5 text-black dark:text-white font-black text-2xl">
+                Congratulations!
+              </p>
+              <p className="mt-5 dark:text-white font-black text-2xl">
+                Share your NFT below: (coming soon)
+              </p>
+            </Box>
           </Grow>
         </Box>
       )}
