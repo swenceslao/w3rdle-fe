@@ -9,10 +9,11 @@ function Modal({
 }) {
   return (
     <Fade in={open}>
-      <div className="absolute w-full h-full grid place-cente">
+      <div className="absolute w-full h-full grid place-center">
         <div
-          className="z-10 flex place-self-center flex-col rounded-xl bg-white p-5 pb-10 drop-shadow-3xl dark:bg-zinc-800 dark:text-white"
-          style={{ width: 'min(600px, 90vw)', height: 'min(580px, 80vh)' }}
+          className="z-10 flex place-self-center flex-col rounded-xl bg-white p-5 pb-10 drop-shadow-3xl dark:bg-zinc-800 dark:text-white h-auto"
+          style={{ width: 'min(600px, 90vw)' }}
+          // style={{ width: 'min(600px, 90vw)', height: 'min(580px, 80vh)' }}
         >
           <div className="flex justify-between items-center pb-5">
             <CloseIcon className="text-white dark:text-zinc-800" />
@@ -37,11 +38,12 @@ function Modal({
 }
 
 Modal.defaultProps = {
+  title: '',
   setClose: () => {},
 };
 
 Modal.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   open: PropTypes.bool.isRequired,
   setClose: PropTypes.func,
   children: PropTypes.instanceOf(Object).isRequired,

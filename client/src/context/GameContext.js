@@ -6,10 +6,6 @@ export const GameContext = createContext({});
 function GameContextProvider({ children }) {
   const [tries, setTries] = useState(0);
 
-  React.useEffect(() => {
-    console.log({ tries });
-  }, [tries]);
-
   return (
     // eslint-disable-next-line react/jsx-no-constructed-context-values
     <GameContext.Provider value={{ tries, setTries }}>

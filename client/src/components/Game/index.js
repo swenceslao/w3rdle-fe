@@ -2,6 +2,7 @@ import React, {
   useState, useEffect, useCallback, useContext,
 } from 'react';
 import PropTypes from 'prop-types';
+import Lottie from 'lottie-react';
 import { ethers } from 'ethers';
 import getUnixTime from 'date-fns/getUnixTime';
 import { Box, Typography, Grow } from '@mui/material';
@@ -13,6 +14,8 @@ import RegisterInfoComponent from 'components/Register';
 import Modal from 'components/Modal';
 import W3rdl3 from 'components/Web3/W3rdl3.json';
 import { GameContext } from 'context/GameContext';
+import loadingAnimation from 'assets/lottie/loading.json';
+import rocketAnimation from 'assets/lottie/rocket.json';
 import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
@@ -34,7 +37,6 @@ function Game({ playSession, setPlaySession }) {
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [signerAddress, setSignerAddress] = useState('');
-  // eslint-disable-next-line no-unused-vars
   const [erc20Contract, setErc20Contract] = useState(null);
   const [windowEthStatus, setWindowEthStatus] = useState('unavailable');
   const [error, setError] = useState('');
@@ -46,9 +48,12 @@ function Game({ playSession, setPlaySession }) {
   const [loadingResult, setLoadingResult] = useState(false);
   const [restartGame, setRestartGame] = useState(false);
   const [restartGameDialog, setRestartGameDialog] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [wordMinted, setWordMinted] = useState(false);
   const [loadingWord, setLoadingWord] = useState(false);
   const [correctWord, setCorrectWord] = useState('');
+  const [finalSuccess, setFinalSuccess] = useState(false);
+  const [playRocket, setPlayRocket] = useState('false');
 
   const onClickDown = (event) => {
     if (event.key === 'Enter') {
@@ -78,7 +83,7 @@ function Game({ playSession, setPlaySession }) {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     try {
       if (provider) {
-        console.log('MetaMask is installed! ', provider);
+        console.log('MetaMask is installed!');
         await window.ethereum.request({
           method: 'wallet_requestPermissions',
           params: [{
@@ -89,7 +94,6 @@ function Game({ playSession, setPlaySession }) {
         const ethSigner = await provider.getSigner();
         const ethSignerAddress = await ethSigner.getAddress();
         setSignerAddress(ethSignerAddress);
-        console.log({ CONTRACT_ADDRESS, ethSigner, ethSignerAddress });
 
         const erc20 = new ethers.Contract(
           CONTRACT_ADDRESS,
@@ -117,7 +121,7 @@ function Game({ playSession, setPlaySession }) {
 
         setPlaySession({
           sessionStarted: getUnixTime(new Date()),
-          playerAddress: signerAddress,
+          playerAddress: ethSignerAddress,
           blockInfo: {
             blockHash,
             blockNumber,
@@ -185,9 +189,12 @@ function Game({ playSession, setPlaySession }) {
         if (status === 200) {
           const hex = `0x${stringToHex(correctWord)}`;
           const mintWordRes = await erc20Contract.mintWord(tries, hex);
-          console.log({ mintWordRes });
           await mintWordRes.wait();
           setWordMinted(true);
+          setPlaySession({});
+          setIsRegistered(false);
+          setFinalSuccess(true);
+          setPlayRocket(true);
         } else {
           setWordMinted(false);
           setWinGame(false);
@@ -203,10 +210,17 @@ function Game({ playSession, setPlaySession }) {
       }
     };
     if (winGame) {
-      setPlaySession({});
       mintWord();
     }
   }, [winGame]);
+
+  useEffect(() => {
+    if (playRocket) {
+      setTimeout(() => {
+        setPlayRocket(false);
+      }, 5800);
+    }
+  }, [playRocket]);
 
   useEffect(() => {
     window.addEventListener('keydown', onClickDown);
@@ -236,69 +250,98 @@ function Game({ playSession, setPlaySession }) {
         </p>
       </Modal>
       <Modal
-        title="Please wait..."
+        title="Finalizing game..."
         open={loadingResult}
         setClose={() => setLoadingResult(false)}
       >
-        <p className="text-black dark:text-white">
-          Finalizing game...
-        </p>
-      </Modal>
-      <Modal
-        title="You WIN!"
-        open={winGame && wordMinted}
-      >
-        <p className="text-black dark:text-white">
-          Congratulations!
-        </p>
+        <Box>
+          <Lottie
+            animationData={loadingAnimation}
+            loop
+            style={{
+              width: '20%',
+              margin: '0 auto',
+            }}
+          />
+        </Box>
       </Modal>
       {error && <Error>{error}</Error>}
-      {!isRegistered ? (
-        <>
-          <RegisterInfoComponent />
-          {Boolean(ongoingMintPrice) && (
-            <Typography variant="p" className="text-black dark:text-white">
-              Mint price:
-              {' '}
-              {ongoingMintPrice}
-              {' '}
-              MATIC
-            </Typography>
-          )}
-          <MetaMaskButton
-            status={windowEthStatus}
-            onVerify={handleConnect}
-            text={metamaskText}
-          />
-        </>
-      ) : (
-        <div className={styles.game}>
-          <Grow in={loadingWord}>
-            <p className="text-black dark:text-white">
-              Loading word...
-            </p>
-          </Grow>
-          <Grow
-            in={!loadingWord}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...(!loadingWord ? { timeout: 500 } : {})}
-          >
-            <Box>
-              <Board
-                restartGame={restartGame}
-                setRestartGame={setRestartGame}
-                singleLetter={singleLetter}
-                clicks={clicked}
-                lettersHandler={lettersHandler}
-                error={setError}
-                win={winGame}
-                setWin={setWinGame}
-                correct={correctWord}
-              />
-              <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
+      {(!finalSuccess) && (
+        !isRegistered ? (
+          <>
+            <RegisterInfoComponent />
+            {Boolean(ongoingMintPrice) && (
+              <Typography variant="p" className="text-black dark:text-white">
+                Mint price:
+                {' '}
+                {ongoingMintPrice}
+                {' '}
+                MATIC
+              </Typography>
+            )}
+            <MetaMaskButton
+              status={windowEthStatus}
+              onVerify={handleConnect}
+              text={metamaskText}
+            />
+          </>
+        ) : (
+          <div className={styles.game}>
+            <Grow in={loadingWord} unmountOnExit>
+              <Box>
+                <Lottie
+                  animationData={loadingAnimation}
+                  loop
+                  style={{
+                    width: '30%',
+                    margin: '0 auto',
+                  }}
+                />
+                <p className="text-gray-700 italic dark:text-slate-300">
+                  Loading...
+                </p>
+              </Box>
+            </Grow>
+            <Grow
+              in={!loadingWord}
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...(!loadingWord ? { timeout: 1500 } : {})}
+            >
+              <Box>
+                <Board
+                  restartGame={restartGame}
+                  setRestartGame={setRestartGame}
+                  singleLetter={singleLetter}
+                  clicks={clicked}
+                  lettersHandler={lettersHandler}
+                  error={setError}
+                  win={winGame}
+                  setWin={setWinGame}
+                  correct={correctWord}
+                />
+                <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
+              </Box>
+            </Grow>
+          </div>
+        )
+      )}
+      {(finalSuccess) && (
+        <Box mt={2}>
+          <Grow in={Boolean(finalSuccess && playRocket)} unmountOnExit>
+            <Box maxWidth="50%" mx="auto">
+              <Lottie animationData={rocketAnimation} />
             </Box>
           </Grow>
-        </div>
+          <Grow
+            in={Boolean(finalSuccess && !playRocket)}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
+          >
+            <p className="mt-5 text-black dark:text-white font-black text-2xl">
+              Congratulations!
+            </p>
+          </Grow>
+        </Box>
       )}
     </>
   );
