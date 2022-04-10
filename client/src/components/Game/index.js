@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {
+  useState, useEffect, useCallback, useContext,
+} from 'react';
 import PropTypes from 'prop-types';
 import { ethers } from 'ethers';
 import getUnixTime from 'date-fns/getUnixTime';
@@ -10,13 +12,24 @@ import MetaMaskButton from 'components/Web3/MetaMaskButton';
 import RegisterInfoComponent from 'components/Register';
 import Modal from 'components/Modal';
 import W3rdl3 from 'components/Web3/W3rdl3.json';
+import { GameContext } from 'context/GameContext';
 import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 const WEI = 10e17;
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
 
+function stringToHex(str) {
+  const arr1 = [];
+  for (let n = 0, l = str.length; n < l; n += 1) {
+    const hex = Number(str.charCodeAt(n)).toString(16);
+    arr1.push(hex);
+  }
+  return arr1.join('').toString();
+}
+
 function Game({ playSession, setPlaySession }) {
+  const { tries } = useContext(GameContext);
   const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
@@ -170,6 +183,10 @@ function Game({ playSession, setPlaySession }) {
         const response = await fetch(`${W3RDL3_API_URL}/minted`, options);
         const { status } = response;
         if (status === 200) {
+          const hex = `0x${stringToHex(correctWord)}`;
+          const mintWordRes = await erc20Contract.mintWord(tries, hex);
+          console.log({ mintWordRes });
+          await mintWordRes.wait();
           setWordMinted(true);
         } else {
           setWordMinted(false);
