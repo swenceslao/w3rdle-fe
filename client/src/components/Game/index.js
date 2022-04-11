@@ -4,9 +4,8 @@ import React, {
 import PropTypes from 'prop-types';
 import Lottie from 'lottie-react';
 import { ethers } from 'ethers';
-import { Helmet } from 'react-helmet';
 import {
-  MetaHeadEmbed, getFacebookUrl, getTwitterUrl, getWhatsAppUrl,
+  getFacebookUrl, getTwitterUrl, getWhatsAppUrl,
 } from '@phntms/react-share';
 import getUnixTime from 'date-fns/getUnixTime';
 import {
@@ -299,18 +298,6 @@ function Game({ darkMode, playSession, setPlaySession }) {
 
   return (
     <>
-      <MetaHeadEmbed
-        render={(meta) => <Helmet>{meta}</Helmet>}
-        siteTitle="W3rdl3"
-        description="Play W3rdl3 now and get your own wordle NFT!"
-        baseSiteUrl="https://w3rdl3.com"
-        keywords={['worlde', 'game', 'nft', 'mint', 'ethereum']}
-        imageUrl="https://bit.ly/3wiUOuk"
-        imageAlt="W3rdl3"
-        twitter={{
-          cardSize: 'large',
-        }}
-      />
       <Modal
         title="Word expired!"
         open={restartGameDialog}
