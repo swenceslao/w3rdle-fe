@@ -23,7 +23,6 @@ app.get('/random_word', (_, res) => {
 });
 
 app.post('/minted', (req, res) => {
-  console.log(req.body);
   res.send({
     status: 200,
     data: 'OK',
