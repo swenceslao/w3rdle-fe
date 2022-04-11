@@ -204,7 +204,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
           >
             <SocialMediaIconsReact
               borderColor="rgba(0,0,0,0.25)"
-              borderWidth="5"
+              borderWidth="3"
               borderStyle="solid"
               icon={icon}
               iconColor="rgba(255,255,255,1)"
