@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, {
   useState, useEffect, useCallback, useContext,
 } from 'react';
@@ -22,9 +23,12 @@ import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
-// eslint-disable-next-line no-unused-vars
 const IPFS_GATEWAY = process.env.REACT_APP_IPFS_GATEWAY;
+const IPFS_CID = process.env.REACT_APP_IPFS_CID;
 const WEI = 10e17;
+
+const generateIpfsUrl = (word) => `${IPFS_GATEWAY}${IPFS_CID}/${word}.png`;
+const generateOpenseaUrl = (contractAddress, nftId) => `https://opensea.io/${contractAddress}/${nftId}`;
 
 function stringToHex(str) {
   const arr1 = [];
@@ -352,9 +356,7 @@ function Game({ playSession, setPlaySession }) {
       <MetaHeadEmbed
         render={(meta) => <Helmet>{meta}</Helmet>}
         siteTitle="W3rdl3"
-        pageTitle="W3rdle3 pageTitle"
-        titleTemplate="[pageTitle] | [siteTitle]"
-        description="Here is my NFT. Play W3rdl3 now and get your own NFT!"
+        description="Play W3rdl3 now and get your own wordle NFT!"
         baseSiteUrl="https://w3rdl3.com"
         keywords={['worlde', 'game', 'nft', 'mint', 'ethereum']}
         imageUrl="https://bit.ly/3wiUOuk"
