@@ -44,7 +44,11 @@ function App() {
         />
       </div>
       <GameContextProvider>
-        <Game playSession={playSession} setPlaySession={setPlaySession} />
+        <Game
+          darkMode={dark}
+          playSession={playSession}
+          setPlaySession={setPlaySession}
+        />
       </GameContextProvider>
     </div>
   );

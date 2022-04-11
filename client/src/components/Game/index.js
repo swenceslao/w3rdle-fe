@@ -1,14 +1,18 @@
-/* eslint-disable no-unused-vars */
 import React, {
-  useState, useEffect, useCallback, useContext,
+  useState, useEffect, useCallback, useContext, useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
 import Lottie from 'lottie-react';
 import { ethers } from 'ethers';
 import { Helmet } from 'react-helmet';
-import { MetaHeadEmbed } from '@phntms/react-share';
+import {
+  MetaHeadEmbed, getFacebookUrl, getTwitterUrl, getWhatsAppUrl,
+} from '@phntms/react-share';
 import getUnixTime from 'date-fns/getUnixTime';
-import { Box, Typography, Grow } from '@mui/material';
+import {
+  Box, Stack, Typography, Grow, Link, Button,
+} from '@mui/material';
+import { SocialMediaIconsReact } from 'social-media-icons-react';
 import Board from 'components/Board';
 import KeyBoard from 'components/KeyBoard';
 import Error from 'components/Error';
@@ -19,6 +23,8 @@ import W3rdl3 from 'components/Web3/W3rdl3.json';
 import { GameContext } from 'context/GameContext';
 import loadingAnimation from 'assets/lottie/loading.json';
 import rocketAnimation from 'assets/lottie/rocket.json';
+import OpenSeaIconForLightBg from 'assets/images/OpenSea-Full-Logo-darktext.png';
+import OpenSeaIconForDarkBg from 'assets/images/OpenSea-Full-Logo-lighttext.png';
 import styles from './style.module.css';
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
@@ -39,13 +45,14 @@ function stringToHex(str) {
   return arr1.join('').toString();
 }
 
-function Game({ playSession, setPlaySession }) {
+function Game({ darkMode, playSession, setPlaySession }) {
   const { tries } = useContext(GameContext);
   const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [signerAddress, setSignerAddress] = useState('');
   const [erc20Contract, setErc20Contract] = useState(null);
+  const [nftId, setNftId] = useState(null);
   const [windowEthStatus, setWindowEthStatus] = useState('unavailable');
   const [error, setError] = useState('');
   const [singleLetter, setSingleLetter] = useState('');
@@ -167,6 +174,52 @@ function Game({ playSession, setPlaySession }) {
     }
   }, []);
 
+  const renderSocialShareButtons = useMemo(() => {
+    // TO DO: replace SocialMediaIconsReact with something else
+    const socials = [
+      {
+        icon: 'facebook',
+        url: getFacebookUrl({ url: generateIpfsUrl(correctWord) }),
+      },
+      {
+        icon: 'twitter',
+        url: getTwitterUrl({ url: generateIpfsUrl(correctWord) }),
+      },
+      {
+        icon: 'whatsapp',
+        url: getWhatsAppUrl({ url: generateIpfsUrl(correctWord) }),
+      },
+    ];
+    return (
+      <Stack direction="row">
+        {socials.map(({ icon, url }) => (
+          <Button
+            component={Link}
+            key={icon}
+            href={url}
+            variant="body2"
+            target="_blank"
+            rel="noopener"
+            className="dark:text-white"
+          >
+            <SocialMediaIconsReact
+              borderColor="rgba(0,0,0,0.25)"
+              borderWidth="5"
+              borderStyle="solid"
+              icon={icon}
+              iconColor="rgba(255,255,255,1)"
+              backgroundColor="rgba(26,166,233,1)"
+              iconSize="5"
+              roundness="20%"
+              size="50"
+              url={url}
+            />
+          </Button>
+        ))}
+      </Stack>
+    );
+  }, [correctWord]);
+
   useEffect(() => {
     if (playSession && Object.keys(playSession).length > 0) {
       setIsRegistered(true);
@@ -194,9 +247,10 @@ function Game({ playSession, setPlaySession }) {
         if (status === 200) {
           const hex = `0x${stringToHex(correctWord)}`;
           const mintWordRes = await erc20Contract.mintWord(tries, hex);
-          const nftId = ethers.utils.formatEther(mintWordRes.value);
-          console.log({ nftId }); // convert to integer and then to string
+          const openseaNftId = ethers.utils.formatUnits(mintWordRes.value, 0);
+          setNftId(openseaNftId);
           await mintWordRes.wait();
+
           setPlaySession({});
           setIsRegistered(false);
           setFinalSuccess(true);
@@ -245,6 +299,18 @@ function Game({ playSession, setPlaySession }) {
 
   return (
     <>
+      <MetaHeadEmbed
+        render={(meta) => <Helmet>{meta}</Helmet>}
+        siteTitle="W3rdl3"
+        description="Play W3rdl3 now and get your own wordle NFT!"
+        baseSiteUrl="https://w3rdl3.com"
+        keywords={['worlde', 'game', 'nft', 'mint', 'ethereum']}
+        imageUrl="https://bit.ly/3wiUOuk"
+        imageAlt="W3rdl3"
+        twitter={{
+          cardSize: 'large',
+        }}
+      />
       <Modal
         title="Word expired!"
         open={restartGameDialog}
@@ -342,34 +408,39 @@ function Game({ playSession, setPlaySession }) {
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
           >
-            <Box>
+            <Box textAlign="center">
               <p className="mt-5 text-black dark:text-white font-black text-2xl">
                 Congratulations!
               </p>
-              <p className="mt-5 dark:text-white font-black text-2xl">
+              <p className="mt-5 dark:text-white">
                 Share your NFT
               </p>
+              <Button
+                component={Link}
+                href={generateOpenseaUrl(CONTRACT_ADDRESS, nftId)}
+                variant="body2"
+                target="_blank"
+                rel="noopener"
+                className="dark:text-white"
+                sx={{ my: 2 }}
+              >
+                <img
+                  src={darkMode ? OpenSeaIconForDarkBg : OpenSeaIconForLightBg}
+                  alt="External link to your minted NFT on OpenSea"
+                  width={180}
+                />
+              </Button>
+              {renderSocialShareButtons}
             </Box>
           </Grow>
         </Box>
       )}
-      <MetaHeadEmbed
-        render={(meta) => <Helmet>{meta}</Helmet>}
-        siteTitle="W3rdl3"
-        description="Play W3rdl3 now and get your own wordle NFT!"
-        baseSiteUrl="https://w3rdl3.com"
-        keywords={['worlde', 'game', 'nft', 'mint', 'ethereum']}
-        imageUrl="https://bit.ly/3wiUOuk"
-        imageAlt="W3rdl3"
-        twitter={{
-          cardSize: 'large',
-        }}
-      />
     </>
   );
 }
 
 Game.propTypes = {
+  darkMode: PropTypes.bool.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   playSession: PropTypes.object.isRequired,
   setPlaySession: PropTypes.func.isRequired,
