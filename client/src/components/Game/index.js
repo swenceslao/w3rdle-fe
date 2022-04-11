@@ -4,6 +4,8 @@ import React, {
 import PropTypes from 'prop-types';
 import Lottie from 'lottie-react';
 import { ethers } from 'ethers';
+import { Helmet } from 'react-helmet';
+import { MetaHeadEmbed } from '@phntms/react-share';
 import getUnixTime from 'date-fns/getUnixTime';
 import { Box, Typography, Grow } from '@mui/material';
 import Board from 'components/Board';
@@ -188,6 +190,8 @@ function Game({ playSession, setPlaySession }) {
         if (status === 200) {
           const hex = `0x${stringToHex(correctWord)}`;
           const mintWordRes = await erc20Contract.mintWord(tries, hex);
+          const nftId = ethers.utils.formatEther(mintWordRes.value);
+          console.log({ nftId }); // convert to integer and then to string
           await mintWordRes.wait();
           setPlaySession({});
           setIsRegistered(false);
@@ -339,12 +343,26 @@ function Game({ playSession, setPlaySession }) {
                 Congratulations!
               </p>
               <p className="mt-5 dark:text-white font-black text-2xl">
-                Share your NFT below: (coming soon)
+                Share your NFT
               </p>
             </Box>
           </Grow>
         </Box>
       )}
+      <MetaHeadEmbed
+        render={(meta) => <Helmet>{meta}</Helmet>}
+        siteTitle="W3rdl3"
+        pageTitle="W3rdle3 pageTitle"
+        titleTemplate="[pageTitle] | [siteTitle]"
+        description="Here is my NFT. Play W3rdl3 now and get your own NFT!"
+        baseSiteUrl="https://w3rdl3.com"
+        keywords={['worlde', 'game', 'nft', 'mint', 'ethereum']}
+        imageUrl="https://bit.ly/3wiUOuk"
+        imageAlt="W3rdl3"
+        twitter={{
+          cardSize: 'large',
+        }}
+      />
     </>
   );
 }
