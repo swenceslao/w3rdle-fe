@@ -11,7 +11,8 @@ import getUnixTime from 'date-fns/getUnixTime';
 import {
   Box, Stack, Typography, Grow, Link, Button,
 } from '@mui/material';
-import { SocialMediaIconsReact } from 'social-media-icons-react';
+import { Image } from 'mui-image';
+import { SocialIcon } from 'react-social-icons';
 import Board from 'components/Board';
 import KeyBoard from 'components/KeyBoard';
 import Error from 'components/Error';
@@ -63,6 +64,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
   const [restartGame, setRestartGame] = useState(false);
   const [restartGameDialog, setRestartGameDialog] = useState(false);
   const [loadingWord, setLoadingWord] = useState(false);
+  const [awaitingRegister, setAwaitingRegister] = useState(false);
   const [correctWord, setCorrectWord] = useState('');
   const [finalSuccess, setFinalSuccess] = useState(false);
   const [playRocket, setPlayRocket] = useState('false');
@@ -124,12 +126,15 @@ function Game({ darkMode, playSession, setPlaySession }) {
         const register = await erc20.register({
           value: floatMintPrice * WEI,
         });
+        setAwaitingRegister(true);
+
         const wait = await register.wait();
         const {
           blockHash,
           blockNumber,
           transactionHash: txHash,
         } = wait;
+        setAwaitingRegister(false);
 
         setPlaySession({
           sessionStarted: getUnixTime(new Date()),
@@ -142,8 +147,6 @@ function Game({ darkMode, playSession, setPlaySession }) {
         });
 
         // sample IPFS gateway URL: https://gateway.ipfs.io/ipfs/QmSfur2vFgWokHtbPobr6P3YLyiCnYjWVjMgdE5xuaAFLF/racer.png
-
-        // const mintWordRes = await erc20.mintWord(1, 0x776f726461);
       } else {
         setMetamaskText('MetaMask unavailable');
       }
@@ -156,6 +159,8 @@ function Game({ darkMode, playSession, setPlaySession }) {
       } else {
         setError(`Something went wrong. Please open the devtools console for errors. ${JSON.stringify(e)}`);
       }
+    } finally {
+      setAwaitingRegister(false);
     }
   };
 
@@ -174,7 +179,6 @@ function Game({ darkMode, playSession, setPlaySession }) {
   }, []);
 
   const renderSocialShareButtons = useMemo(() => {
-    // TO DO: replace SocialMediaIconsReact with something else
     const socials = [
       {
         icon: 'facebook',
@@ -190,34 +194,26 @@ function Game({ darkMode, playSession, setPlaySession }) {
       },
     ];
     return (
-      <Stack direction="row">
+      <Stack direction="row" alignItems="center">
         {socials.map(({ icon, url }) => (
-          <Button
-            component={Link}
-            key={icon}
-            href={url}
-            variant="body2"
-            target="_blank"
-            rel="noopener"
-            className="dark:text-white"
-          >
-            <SocialMediaIconsReact
-              borderColor="rgba(0,0,0,0.25)"
-              borderWidth="3"
-              borderStyle="solid"
-              icon={icon}
-              iconColor="rgba(255,255,255,1)"
-              backgroundColor="rgba(26,166,233,1)"
-              iconSize="5"
-              roundness="20%"
-              size="50"
-              url={url}
-            />
-          </Button>
+          <Box key={icon} mx={1}>
+            <SocialIcon target="_blank" rel="noopener" key={icon} label={icon} url={url} />
+          </Box>
         ))}
       </Stack>
     );
   }, [correctWord]);
+
+  const renderLoadingComponent = useMemo(() => (
+    <Lottie
+      animationData={loadingAnimation}
+      loop
+      style={{
+        width: '20%',
+        margin: '0 auto',
+      }}
+    />
+  ), []);
 
   useEffect(() => {
     if (playSession && Object.keys(playSession).length > 0) {
@@ -299,12 +295,23 @@ function Game({ darkMode, playSession, setPlaySession }) {
   return (
     <>
       <Modal
+        title="Waiting for block..."
+        open={awaitingRegister}
+      >
+        <Box>
+          {renderLoadingComponent}
+          <p className="text-black dark:text-white">
+            Waiting for transaction to be successfully included on the blockchain...
+          </p>
+        </Box>
+      </Modal>
+      <Modal
         title="Word expired!"
         open={restartGameDialog}
         setClose={() => setRestartGameDialog(false)}
       >
         <p className="text-black dark:text-white">
-          Word has expired. Close this dialog to restart the game!
+          Word has expired. Close this dialog to get a new word to play!
         </p>
       </Modal>
       <Modal
@@ -313,14 +320,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
         setClose={() => setLoadingResult(false)}
       >
         <Box>
-          <Lottie
-            animationData={loadingAnimation}
-            loop
-            style={{
-              width: '20%',
-              margin: '0 auto',
-            }}
-          />
+          {renderLoadingComponent}
         </Box>
       </Modal>
       {error && <Error>{error}</Error>}
@@ -395,12 +395,26 @@ function Game({ darkMode, playSession, setPlaySession }) {
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
           >
-            <Box textAlign="center">
+            <Stack direction="column" alignItems="center" textAlign="center">
               <p className="mt-5 text-black dark:text-white font-black text-2xl">
                 Congratulations!
               </p>
+              <p className="mt-5 mb-2 dark:text-white">
+                Your NFT image is being generated from the InterPlanetary File System (IPFS).
+                Sit back and relax!
+              </p>
+              <Image
+                src={generateIpfsUrl(correctWord.toLowerCase())}
+                width="max-content"
+                alt={`minted word: ${correctWord}`}
+                showLoading={(
+                  <Box mt={5}>
+                    {renderLoadingComponent}
+                  </Box>
+                )}
+              />
               <p className="mt-5 dark:text-white">
-                Share your NFT
+                Share your NFT below
               </p>
               <Button
                 component={Link}
@@ -418,7 +432,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 />
               </Button>
               {renderSocialShareButtons}
-            </Box>
+            </Stack>
           </Grow>
         </Box>
       )}
