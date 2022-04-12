@@ -24,12 +24,6 @@ function Box({ value, state, pos }) {
         setCssState(defaultCss);
       }, 750);
     }
-    // setTimeout(() => {
-    //   if (state === 'C') setCssState('bg-correct text-white');
-    //   else if (state === 'E') setCssState('bg-exist text-white');
-    //   else if (state === 'N') setCssState('bg-wrong text-white dark:bg-gray-600');
-    //   else setCssState(defaultCss);
-    // }, 125 * pos);
   }, [state]);
 
   return (

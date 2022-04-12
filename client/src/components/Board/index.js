@@ -33,13 +33,12 @@ function Board({
   lettersHandler,
   correct,
 }) {
-  const { setTries } = useContext(GameContext);
+  const { setTries, lost, setLost } = useContext(GameContext);
   const [boardLetters, setBoardLetters] = useState(initializeLetters());
   const [board, setBoard] = useState(initializeBoard());
   const [changed, setChanged] = useState(false);
   const [row, setRow] = useState(0);
   const [col, setCol] = useState(0);
-  const [lost, setLost] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -89,8 +88,11 @@ function Board({
               if (row === 5) {
                 setLost(true);
                 setTimeout(() => {
-                  setMessage(`It was ${correct}`);
+                  setMessage(`It was ${correct}.`);
                 }, 750);
+                setTimeout(() => {
+                  setRestartGame(true);
+                }, 2500);
               }
 
               setCol(0);
@@ -136,6 +138,7 @@ function Board({
       setBoard(initializeBoard());
       setRow(0);
       setCol(0);
+      setLost(false);
       setRestartGame(false);
     }
   }, [restartGame]);
@@ -149,9 +152,14 @@ function Board({
           ))}
         </div>
       ))}
-      <div className=" grid place-items-center h-8 font-bold dark:text-white">
+      <div className="grid place-items-center h-8 text-center font-bold dark:text-white">
         {lost || win ? message : ''}
       </div>
+      {lost && (
+        <div className="grid place-items-center text-sm text-center dark:text-white">
+          Round lost. Don&apos;t worry, you can try again!
+        </div>
+      )}
     </div>
   );
 }

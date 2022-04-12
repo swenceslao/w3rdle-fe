@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import React, {
   useState, useEffect, useCallback, useContext, useMemo,
 } from 'react';
@@ -46,7 +47,7 @@ function stringToHex(str) {
 }
 
 function Game({ darkMode, playSession, setPlaySession }) {
-  const { tries } = useContext(GameContext);
+  const { tries, lost } = useContext(GameContext);
   const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
   const [metamaskText, setMetamaskText] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
@@ -68,6 +69,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
   const [correctWord, setCorrectWord] = useState('');
   const [finalSuccess, setFinalSuccess] = useState(false);
   const [playRocket, setPlayRocket] = useState('false');
+  const [key, setKey] = useState(0);
 
   const onClickDown = (event) => {
     if (event.key === 'Enter') {
@@ -121,7 +123,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
         const readableMintPrice = ethers.utils.formatEther(mintPriceHex);
         const floatMintPrice = parseFloat(readableMintPrice);
         setOngoingMintPrice(floatMintPrice);
-        setMetamaskText('Pay With MetaMask Wallet');
+        setMetamaskText('MetaMask window open');
 
         const register = await erc20.register({
           value: floatMintPrice * WEI,
@@ -145,8 +147,6 @@ function Game({ darkMode, playSession, setPlaySession }) {
             txHash,
           },
         });
-
-        // sample IPFS gateway URL: https://gateway.ipfs.io/ipfs/QmSfur2vFgWokHtbPobr6P3YLyiCnYjWVjMgdE5xuaAFLF/racer.png
       } else {
         setMetamaskText('MetaMask unavailable');
       }
@@ -226,6 +226,10 @@ function Game({ darkMode, playSession, setPlaySession }) {
   }, [isRegistered]);
 
   useEffect(() => {
+    if (lost) setTimeout(() => getRandomWord(), 2500);
+  }, [lost]);
+
+  useEffect(() => {
     const mintWord = async () => {
       setLoadingResult(true);
       try {
@@ -258,7 +262,8 @@ function Game({ darkMode, playSession, setPlaySession }) {
         }
       } catch (e) {
         console.error({ e });
-        setError('Something went wrong');
+        setError('Something went wrong. Please refresh the page to restart.');
+        setPlaySession({});
       } finally {
         setLoadingResult(false);
       }
@@ -334,7 +339,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 {' '}
                 {ongoingMintPrice}
                 {' '}
-                MATIC
+                ETH
               </Typography>
             )}
             <MetaMaskButton
@@ -393,7 +398,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
           <Grow
             in={Boolean(finalSuccess && !playRocket)}
             // eslint-disable-next-line react/jsx-props-no-spreading
-            {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
+            {...((finalSuccess && !playRocket) ? { timeout: 1000 } : {})}
           >
             <Stack direction="column" alignItems="center" textAlign="center">
               <p className="mt-5 text-black dark:text-white font-black text-2xl">
@@ -404,6 +409,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 Sit back and relax!
               </p>
               <Image
+                key={key}
                 src={generateIpfsUrl(correctWord.toLowerCase())}
                 width="max-content"
                 alt={`minted word: ${correctWord}`}
@@ -412,6 +418,9 @@ function Game({ darkMode, playSession, setPlaySession }) {
                     {renderLoadingComponent}
                   </Box>
                 )}
+                onError={() => {
+                  setKey(key + 1); // force rerender to attempt to get the image if it fails
+                }}
               />
               <p className="mt-5 dark:text-white">
                 Share your NFT below
