@@ -398,15 +398,14 @@ function Game({ darkMode, playSession, setPlaySession }) {
           <Grow
             in={Boolean(finalSuccess && !playRocket)}
             // eslint-disable-next-line react/jsx-props-no-spreading
-            {...((finalSuccess && !playRocket) ? { timeout: 1000 } : {})}
+            {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
           >
             <Stack direction="column" alignItems="center" textAlign="center">
               <p className="mt-5 text-black dark:text-white font-black text-2xl">
                 Congratulations!
               </p>
               <p className="mt-5 mb-2 dark:text-white">
-                Your NFT image is being generated from the InterPlanetary File System (IPFS).
-                Sit back and relax!
+                Your NFT image below is generated from the InterPlanetary File System (IPFS).
               </p>
               <Image
                 key={key}
@@ -423,7 +422,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 }}
               />
               <p className="mt-5 dark:text-white">
-                Share your NFT below
+                Share your NFT
               </p>
               <Button
                 component={Link}
