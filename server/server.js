@@ -1,11 +1,18 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import CryptoJS from 'crypto-js';
 import words from './words.js';
+
+const encryptWithAES = (text) => {
+  const passphrase = process.env.PASSPHRASE;
+  return CryptoJS.AES.encrypt(text, passphrase).toString();
+};
 
 const app = express();
 app.use(cors());
-const port = process.env.PORT || 5001;
+const port = process.env.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -18,7 +25,7 @@ app.get('/health', (_, res) => {
 
 app.get('/random_word', (_, res) => {
   const random = Math.floor(Math.random() * words.length);
-  const currentWord = words[random].toUpperCase();
+  const currentWord = encryptWithAES(words[random].toUpperCase());
   res.send({ currentWord });
 });
 

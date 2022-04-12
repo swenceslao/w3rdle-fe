@@ -8,6 +8,7 @@ import { ethers } from 'ethers';
 import {
   getFacebookUrl, getTwitterUrl, getWhatsAppUrl,
 } from '@phntms/react-share';
+import cryptoJs from 'crypto-js';
 import getUnixTime from 'date-fns/getUnixTime';
 import {
   Box, Stack, Typography, Grow, Link, Button,
@@ -28,6 +29,11 @@ import OpenSeaIconForLightBg from 'assets/images/OpenSea-Full-Logo-darktext.png'
 import OpenSeaIconForDarkBg from 'assets/images/OpenSea-Full-Logo-lighttext.png';
 import styles from './style.module.css';
 
+require('es6-promise').polyfill();
+
+const originalFetch = require('isomorphic-fetch');
+const fetch = require('fetch-retry')(originalFetch);
+
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
 const IPFS_GATEWAY = process.env.REACT_APP_IPFS_GATEWAY;
@@ -37,14 +43,21 @@ const WEI = 10e17;
 const generateIpfsUrl = (word) => `${IPFS_GATEWAY}${IPFS_CID}/${word}.png`;
 const generateOpenseaUrl = (contractAddress, nftId) => `https://opensea.io/${contractAddress}/${nftId}`;
 
-function stringToHex(str) {
+const decryptWithAES = (ciphertext) => {
+  const passphrase = process.env.REACT_APP_PASSPHRASE;
+  const bytes = cryptoJs.AES.decrypt(ciphertext, passphrase);
+  const originalText = bytes.toString(cryptoJs.enc.Utf8);
+  return originalText;
+};
+
+const stringToHex = (str) => {
   const arr1 = [];
   for (let n = 0, l = str.length; n < l; n += 1) {
     const hex = Number(str.charCodeAt(n)).toString(16);
     arr1.push(hex);
   }
   return arr1.join('').toString();
-}
+};
 
 function Game({ darkMode, playSession, setPlaySession }) {
   const { tries, lost } = useContext(GameContext);
@@ -169,8 +182,9 @@ function Game({ darkMode, playSession, setPlaySession }) {
     try {
       const response = await fetch(`${W3RDL3_API_URL}/random_word`);
       const { currentWord } = await response.json();
-      console.log({ currentWord });
-      setCorrectWord(currentWord);
+      const word = decryptWithAES(currentWord);
+      console.log({ word });
+      setCorrectWord(word);
     } catch (e) {
       console.error({ e });
     } finally {
