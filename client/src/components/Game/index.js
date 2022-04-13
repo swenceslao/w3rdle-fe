@@ -36,6 +36,8 @@ const fetch = require('fetch-retry')(originalFetch);
 
 const CONTRACT_ADDRESS = process.env.REACT_APP_CONTRACT_ADDRESS;
 const W3RDL3_API_URL = process.env.REACT_APP_API_URL;
+const RANDOM_WORD_PASSPHRASE = process.env.REACT_APP_RANDOM_WORD_PASSPHRASE;
+const MINTED_PASSPHRASE = process.env.REACT_APP_MINTED_PASSPHRASE;
 const IPFS_GATEWAY = process.env.REACT_APP_IPFS_GATEWAY;
 const IPFS_CID = process.env.REACT_APP_IPFS_CID;
 const WEI = 10e17;
@@ -43,8 +45,9 @@ const WEI = 10e17;
 const generateIpfsUrl = (word) => `${IPFS_GATEWAY}${IPFS_CID}/${word}.png`;
 const generateOpenseaUrl = (contractAddress, nftId) => `https://opensea.io/${contractAddress}/${nftId}`;
 
-const decryptWithAES = (ciphertext) => {
-  const passphrase = process.env.REACT_APP_PASSPHRASE;
+const encryptWithAES = (text, passphrase) => cryptoJs.AES.encrypt(text, passphrase).toString();
+
+const decryptWithAES = (ciphertext, passphrase) => {
   const bytes = cryptoJs.AES.decrypt(ciphertext, passphrase);
   const originalText = bytes.toString(cryptoJs.enc.Utf8);
   return originalText;
@@ -182,7 +185,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
     try {
       const response = await fetch(`${W3RDL3_API_URL}/random_word`);
       const { currentWord } = await response.json();
-      const word = decryptWithAES(currentWord);
+      const word = decryptWithAES(currentWord, RANDOM_WORD_PASSPHRASE);
       console.log({ word });
       setCorrectWord(word);
     } catch (e) {
@@ -247,16 +250,16 @@ function Game({ darkMode, playSession, setPlaySession }) {
     const mintWord = async () => {
       setLoadingResult(true);
       try {
+        const data = encryptWithAES(JSON.stringify({
+          wallet_address: signerAddress,
+          word: correctWord,
+        }), MINTED_PASSPHRASE);
         const options = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wallet_address: signerAddress,
-            word: correctWord,
-          }),
+          body: JSON.stringify({ data }),
         };
-        const response = await fetch(`${W3RDL3_API_URL}/minted`, options);
-        const { status } = response;
+        const { status } = await fetch(`${W3RDL3_API_URL}/minted`, options);
         if (status === 200) {
           const hex = `0x${stringToHex(correctWord)}`;
           const mintWordRes = await erc20Contract.mintWord(tries, hex);
@@ -276,7 +279,13 @@ function Game({ darkMode, playSession, setPlaySession }) {
         }
       } catch (e) {
         console.error({ e });
-        setError('Something went wrong. Please refresh the page to restart.');
+        if (e.code && e.code === 4001) {
+          setError('You have cancelled the request.');
+        } else if (e.code && e.code !== 4001) {
+          setError(`${e.message} (code ${e.code})`);
+        } else {
+          setError(`Something went wrong. Please open the devtools console for errors. ${JSON.stringify(e)}`);
+        }
         setPlaySession({});
       } finally {
         setLoadingResult(false);
