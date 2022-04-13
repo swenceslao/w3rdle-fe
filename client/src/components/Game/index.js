@@ -463,6 +463,14 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 />
               </Button>
               {renderSocialShareButtons}
+              <Button
+                variant="text"
+                onClick={() => window.location.reload()}
+                size="large"
+                sx={{ mt: 5 }}
+              >
+                Play Again
+              </Button>
             </Stack>
           </Grow>
         </Box>
