@@ -1,9 +1,8 @@
-/* eslint-disable no-param-reassign */
 import React, {
   useState, useEffect, useCallback, useContext, useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import Lottie from 'lottie-react';
+import Lottie from 'react-lottie-player/dist/LottiePlayerLight';
 import { ethers } from 'ethers';
 import {
   getFacebookUrl, getTwitterUrl, getWhatsAppUrl,
@@ -85,6 +84,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
   const [correctWord, setCorrectWord] = useState('');
   const [finalSuccess, setFinalSuccess] = useState(false);
   const [playRocket, setPlayRocket] = useState('false');
+  const [showSuccessContent, setShowSuccessContent] = useState(false);
   const [key, setKey] = useState(0);
 
   const onClickDown = (event) => {
@@ -225,6 +225,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
     <Lottie
       animationData={loadingAnimation}
       loop
+      play
       style={{
         width: '20%',
         margin: '0 auto',
@@ -295,14 +296,6 @@ function Game({ darkMode, playSession, setPlaySession }) {
       mintWord();
     }
   }, [winGame]);
-
-  useEffect(() => {
-    if (playRocket) {
-      setTimeout(() => {
-        setPlayRocket(false);
-      }, 5800);
-    }
-  }, [playRocket]);
 
   useEffect(() => {
     window.addEventListener('keydown', onClickDown);
@@ -378,6 +371,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 <Lottie
                   animationData={loadingAnimation}
                   loop
+                  play
                   style={{
                     width: '30%',
                     margin: '0 auto',
@@ -413,16 +407,20 @@ function Game({ darkMode, playSession, setPlaySession }) {
       )}
       {(finalSuccess) && (
         <Box mt={2}>
-          <Grow in={Boolean(finalSuccess && playRocket)} unmountOnExit>
+          {playRocket && (
             <Box maxWidth="50%" mx="auto">
-              <Lottie animationData={rocketAnimation} />
+              <Lottie
+                animationData={rocketAnimation}
+                play
+                loop={false}
+                onComplete={() => {
+                  setShowSuccessContent(true);
+                  setPlayRocket(false);
+                }}
+              />
             </Box>
-          </Grow>
-          <Grow
-            in={Boolean(finalSuccess && !playRocket)}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...((finalSuccess && !playRocket) ? { timeout: 800 } : {})}
-          >
+          )}
+          <Grow in={showSuccessContent}>
             <Stack direction="column" alignItems="center" textAlign="center">
               <p className="mt-5 text-black dark:text-white font-black text-2xl">
                 Congratulations!

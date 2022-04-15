@@ -152,14 +152,14 @@ function Board({
           ))}
         </div>
       ))}
-      <div className="grid place-items-center h-8 text-center font-bold dark:text-white">
-        {lost || win ? message : ''}
-      </div>
       {lost && (
         <div className="grid place-items-center text-sm text-center dark:text-white">
           Round lost. Don&apos;t worry, you can try again!
         </div>
       )}
+      <div className="grid place-items-center h-8 text-center font-bold dark:text-white">
+        {lost || win ? message : ''}
+      </div>
     </div>
   );
 }
@@ -170,10 +170,6 @@ Board.defaultProps = {
 };
 
 Board.propTypes = {
-  // board: PropTypes.arrayOf(PropTypes.instanceOf(Array)).isRequired,
-  // setBoard: PropTypes.func.isRequired,
-  // boardLetters: PropTypes.arrayOf(PropTypes.instanceOf(Array)).isRequired,
-  // setBoardLetters: PropTypes.func.isRequired,
   restartGame: PropTypes.bool.isRequired,
   setRestartGame: PropTypes.func.isRequired,
   win: PropTypes.bool.isRequired,
