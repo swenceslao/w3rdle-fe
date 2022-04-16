@@ -8,7 +8,7 @@ function Modal({
   title, open, setClose, children,
 }) {
   return (
-    <Fade in={open}>
+    <Fade in={open} data-testid="modal">
       <div className="absolute w-full h-full grid place-center">
         <div
           className="z-10 flex place-self-center flex-col rounded-xl bg-white p-5 pb-10 drop-shadow-3xl dark:bg-zinc-800 dark:text-white h-auto"
@@ -20,6 +20,7 @@ function Modal({
             <CloseIcon
               onClick={setClose}
               sx={{ cursor: 'pointer' }}
+              data-testid="close-icon"
             />
           </div>
           <div className="modal overscroll-contain overflow-y-scroll sm:px-7">
