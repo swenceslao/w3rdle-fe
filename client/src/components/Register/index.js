@@ -3,7 +3,7 @@ import { Typography, Stack } from '@mui/material';
 
 function RegisterInfoComponent() {
   return (
-    <Stack mx={2} my={3}>
+    <Stack mx={2} my={3} data-testid="register-info">
       <Typography variant="h4" className="text-black dark:text-white">
         To play W3RDL3
       </Typography>
