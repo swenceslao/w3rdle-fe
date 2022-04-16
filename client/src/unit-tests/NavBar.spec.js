@@ -18,13 +18,13 @@ const defaultProps = {
 const renderComponent = (props = defaultProps) => render(<NavBar {...props} />);
 
 describe('navbar', () => {
-  test('should show a default navbar', () => {
+  it('should show a default navbar', () => {
     const { getByTestId } = renderComponent();
     const navbar = getByTestId('navbar');
     expect(navbar).toBeInTheDocument();
   });
 
-  test('should show call help btn fn', () => {
+  it('should show call help btn fn', () => {
     const { getByTestId } = renderComponent();
     const navbar = getByTestId('navbar');
     const helpBtn = within(navbar).getByTestId('help-icon');
@@ -33,7 +33,7 @@ describe('navbar', () => {
     expect(help).toHaveBeenCalled();
   });
 
-  test('should show wallet address', () => {
+  it('should show wallet address', () => {
     const walletAddress = '0x929aB7A6a6558Be5BA707F5a3D2F7d70b0Bb333f';
     const { getByTestId } = renderComponent({
       ...defaultProps,

@@ -19,7 +19,7 @@ const defaultProps = {
 const renderComponent = (props = defaultProps) => render(<Modal {...props} />);
 
 describe('modal', () => {
-  test('should show a default modal', () => {
+  it('should show a default modal', () => {
     const { getByTestId } = renderComponent();
     const modal = getByTestId('modal');
     expect(modal).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('modal', () => {
     expect(within(modal).getByTestId('close-icon')).toBeInTheDocument();
   });
 
-  test('should call setClose', () => {
+  it('should call setClose', () => {
     const { getByTestId } = renderComponent();
     const modal = getByTestId('modal');
     expect(modal).toBeInTheDocument();

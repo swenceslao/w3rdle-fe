@@ -8,7 +8,7 @@ import {
 const renderComponent = (props) => render(<Error {...props} />);
 
 describe('error', () => {
-  test('should render error message', () => {
+  it('should render error message', () => {
     const errorMsg = 'This is an error message';
     const { getByTestId } = renderComponent({
       children: <p>{errorMsg}</p>,
