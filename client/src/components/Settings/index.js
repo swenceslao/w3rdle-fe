@@ -22,17 +22,19 @@ function Settings({ dark, darkness }) {
   };
 
   return (
-    <Box>
+    <Box data-testid="settings">
       <SettingsIcon
         onClick={handleClick}
         className="text-black dark:text-white"
         sx={{ cursor: 'pointer' }}
+        data-testid="settings-icon"
       />
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <FormControlLabel
           className="pl-3.5 text-slate-600"
           control={<Switch checked={dark} onChange={handleChange} />}
-          label="Dark mode"
+          label={dark ? 'Light mode' : 'Dark mode'}
+          data-testid="form-label"
         />
       </Menu>
     </Box>

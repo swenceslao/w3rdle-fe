@@ -29,7 +29,7 @@ Box.propTypes = {
 
 function Help() {
   return (
-    <>
+    <div data-testid="help">
       <p className="text-left text-sm sm:text-base py-5 font-regular opacity-75 mr-1">
         Guess the WORDLE in six tries.
         <br />
@@ -84,7 +84,7 @@ function Help() {
         {' '}
         is not in the word.
       </p>
-    </>
+    </div>
   );
 }
 
