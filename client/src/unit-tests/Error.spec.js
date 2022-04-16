@@ -11,7 +11,7 @@ describe('error', () => {
   it('should render error message', () => {
     const errorMsg = 'This is an error message';
     const { getByTestId } = renderComponent({
-      children: <p>{errorMsg}</p>,
+      children: errorMsg,
     });
     const error = getByTestId('error');
     expect(error).toBeInTheDocument();
