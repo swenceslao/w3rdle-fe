@@ -31,6 +31,7 @@ function Box({ value, state, pos }) {
       className={
         `h-12 w-12 sm:w-14 sm:h-14 grid place-items-center p-0 m-0 font-bold text-2xl rounded-sm ${cssState}`
       }
+      data-testid="box"
     >
       {value === 'DEL' ? <BackspaceIcon /> : value}
     </div>
