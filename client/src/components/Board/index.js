@@ -31,7 +31,7 @@ function Board({
   error,
   singleLetter,
   lettersHandler,
-  correct,
+  correctWord,
 }) {
   const { setTries, lost, setLost } = useContext(GameContext);
   const [boardLetters, setBoardLetters] = useState(initializeLetters());
@@ -74,10 +74,10 @@ function Board({
             // }
             // if (words.includes(word.toLowerCase())) {
             for (let i = 0; i < 5; i += 1) {
-              if (correct[i] === prevBoardCopy[row][i][0]) {
+              if (correctWord[i] === prevBoardCopy[row][i][0]) {
                 prevBoardCopy[row][i][1] = 'C';
                 correctLetters += 1;
-              } else if (correct.includes(prevBoardCopy[row][i][0])) {
+              } else if (correctWord.includes(prevBoardCopy[row][i][0])) {
                 prevBoardCopy[row][i][1] = 'E';
               } else {
                 prevBoardCopy[row][i][1] = 'N';
@@ -88,7 +88,7 @@ function Board({
               if (row === 5) {
                 setLost(true);
                 setTimeout(() => {
-                  setMessage(`It was ${correct}.`);
+                  setMessage(`It was ${correctWord}.`);
                 }, 750);
                 setTimeout(() => {
                   setRestartGame(true);
@@ -144,7 +144,7 @@ function Board({
   }, [restartGame]);
 
   return (
-    <div className="px-10 py-5 grid gap-y-1 items-center w-100 justify-center">
+    <div data-testid="board" className="px-10 py-5 grid gap-y-1 items-center w-100 justify-center">
       {board.map((b, k) => (
         <div key={k} className="flex gap-1 w-fit">
           {b.map((value, j) => (
@@ -153,11 +153,11 @@ function Board({
         </div>
       ))}
       {lost && (
-        <div className="grid place-items-center text-sm text-center dark:text-white">
+        <div data-testid="round-lost-text" className="grid place-items-center text-sm text-center dark:text-white">
           Round lost. Don&apos;t worry, you can try again!
         </div>
       )}
-      <div className="grid place-items-center h-8 text-center font-bold dark:text-white">
+      <div data-testid="correct-word-text" className="grid place-items-center h-8 text-center font-bold dark:text-white">
         {lost || win ? message : ''}
       </div>
     </div>
@@ -166,7 +166,7 @@ function Board({
 
 Board.defaultProps = {
   singleLetter: '',
-  correct: '',
+  correctWord: '',
 };
 
 Board.propTypes = {
@@ -178,7 +178,7 @@ Board.propTypes = {
   error: PropTypes.func.isRequired,
   singleLetter: PropTypes.string,
   lettersHandler: PropTypes.func.isRequired,
-  correct: PropTypes.string,
+  correctWord: PropTypes.string,
 };
 
 export default Board;

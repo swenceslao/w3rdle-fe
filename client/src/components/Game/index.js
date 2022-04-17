@@ -397,7 +397,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                   error={setError}
                   win={winGame}
                   setWin={setWinGame}
-                  correct={correctWord}
+                  correctWord={correctWord}
                 />
                 <KeyBoard keyHandler={keyHandler} letters={letters} changed={changed} />
               </Box>
