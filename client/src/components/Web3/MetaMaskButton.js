@@ -6,6 +6,7 @@ import MetamaskIcon from 'assets/images/metamask.png';
 function MetaMaskButton({ status, onVerify, text }) {
   return (
     <Button
+      data-testid="metamask-button"
       disabled={status === 'unavailable' || text.toLowerCase().includes('metamask window open')}
       onClick={onVerify}
       variant="outlined"
