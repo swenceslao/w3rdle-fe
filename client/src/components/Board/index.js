@@ -3,6 +3,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Box from 'components/Box';
 import { GameContext } from 'context/GameContext';
+import dictionary from 'dictionary';
 
 const initializeLetters = () => {
   const defaultLetters = [];
@@ -68,55 +69,55 @@ function Board({
             }
           } else if (singleLetter === 'ENTER') {
             let correctLetters = 0;
-            // let word = '';
-            // for (let i = 0; i < 5; i += 1) {
-            //   word += prevBoardCopy[row][i][0];
-            // }
-            // if (words.includes(word.toLowerCase())) {
+            let word = '';
             for (let i = 0; i < 5; i += 1) {
-              if (correctWord[i] === prevBoardCopy[row][i][0]) {
-                prevBoardCopy[row][i][1] = 'C';
-                correctLetters += 1;
-              } else if (correctWord.includes(prevBoardCopy[row][i][0])) {
-                prevBoardCopy[row][i][1] = 'E';
-              } else {
-                prevBoardCopy[row][i][1] = 'N';
+              word += prevBoardCopy[row][i][0];
+            }
+            if (dictionary.includes(word.toLowerCase())) {
+              for (let i = 0; i < 5; i += 1) {
+                if (correctWord[i] === prevBoardCopy[row][i][0]) {
+                  prevBoardCopy[row][i][1] = 'C';
+                  correctLetters += 1;
+                } else if (correctWord.includes(prevBoardCopy[row][i][0])) {
+                  prevBoardCopy[row][i][1] = 'E';
+                } else {
+                  prevBoardCopy[row][i][1] = 'N';
+                }
+
+                setRow(row + 1);
+
+                if (row === 5) {
+                  setLost(true);
+                  setTimeout(() => {
+                    setMessage(`It was ${correctWord}.`);
+                  }, 750);
+                  setTimeout(() => {
+                    setRestartGame(true);
+                  }, 2500);
+                }
+
+                setCol(0);
+                setBoardLetters((prev) => {
+                  const prevCopy = prev.slice();
+                  // eslint-disable-next-line prefer-destructuring
+                  prevCopy[board[row][i][0]] = board[row][i][1];
+                  return prev;
+                });
               }
+              setChanged(!changed);
 
-              setRow(row + 1);
-
-              if (row === 5) {
-                setLost(true);
+              if (correctLetters === 5) {
+                setWin(true);
                 setTimeout(() => {
-                  setMessage(`It was ${correctWord}.`);
+                  setMessage('You WIN');
                 }, 750);
-                setTimeout(() => {
-                  setRestartGame(true);
-                }, 2500);
               }
-
-              setCol(0);
-              setBoardLetters((prev) => {
-                const prevCopy = prev.slice();
-                // eslint-disable-next-line prefer-destructuring
-                prevCopy[board[row][i][0]] = board[row][i][1];
-                return prev;
-              });
+              return prevBoard;
             }
-            setChanged(!changed);
-
-            if (correctLetters === 5) {
-              setWin(true);
-              setTimeout(() => {
-                setMessage('You WIN');
-              }, 750);
-            }
-            return prevBoard;
-            // }
-            // error('Word not in dictionary');
-            // setTimeout(() => {
-            //   error('');
-            // }, 1000);
+            error('Word not in dictionary');
+            setTimeout(() => {
+              error('');
+            }, 1000);
           }
           return prevBoard;
         });
