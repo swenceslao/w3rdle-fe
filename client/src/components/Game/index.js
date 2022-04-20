@@ -195,6 +195,13 @@ function Game({ darkMode, playSession, setPlaySession }) {
     }
   }, []);
 
+  const restartSession = () => {
+    setWinGame(false);
+    getRandomWord();
+    setRestartGame(true);
+    setRestartGameDialog(true);
+  };
+
   const renderSocialShareButtons = useMemo(() => {
     const socials = [
       {
@@ -262,21 +269,23 @@ function Game({ darkMode, playSession, setPlaySession }) {
         };
         const { status } = await fetch(`${W3RDL3_API_URL}/minted`, options);
         if (status === 200) {
-          const hex = `0x${stringToHex(correctWord)}`;
-          const mintWordRes = await erc20Contract.mintWord(tries, hex);
-          const openseaNftId = ethers.utils.formatUnits(mintWordRes.value, 0);
-          setNftId(openseaNftId);
-          await mintWordRes.wait();
+          const hex = `0x${stringToHex(correctWord.toLowerCase())}`;
+          const isMinted = await erc20Contract.wordMap(hex);
+          if (isMinted) {
+            const mintWordRes = await erc20Contract.mintWord(tries, hex);
+            const openseaNftId = ethers.utils.formatUnits(mintWordRes.value, 0);
+            setNftId(openseaNftId);
+            await mintWordRes.wait();
 
-          setPlaySession({});
-          setIsRegistered(false);
-          setFinalSuccess(true);
-          setPlayRocket(true);
+            setPlaySession({});
+            setIsRegistered(false);
+            setFinalSuccess(true);
+            setPlayRocket(true);
+          } else {
+            restartSession();
+          }
         } else {
-          setWinGame(false);
-          getRandomWord();
-          setRestartGame(true);
-          setRestartGameDialog(true);
+          restartSession();
         }
       } catch (e) {
         console.error({ e });
@@ -332,7 +341,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
         setClose={() => setRestartGameDialog(false)}
       >
         <p className="text-black dark:text-white">
-          Word has expired. Close this dialog to get a new word to play!
+          Word has expired or has already been minted. Close this dialog to get a new word to play!
         </p>
       </Modal>
       <Modal

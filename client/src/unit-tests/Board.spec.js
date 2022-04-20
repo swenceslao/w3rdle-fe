@@ -39,7 +39,7 @@ describe('wordle board', () => {
     expect(queryAllByTestId('box')).toHaveLength(30);
   });
 
-  it('should render ost round text', (done) => {
+  it('should render lost round text', (done) => {
     const { getByTestId } = renderComponent({
       ...defaultProps,
       lost: true,
