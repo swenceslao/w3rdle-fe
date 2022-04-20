@@ -258,20 +258,21 @@ function Game({ darkMode, playSession, setPlaySession }) {
     const mintWord = async () => {
       setLoadingResult(true);
       try {
-        const data = encryptWithAES(JSON.stringify({
-          wallet_address: signerAddress,
-          word: correctWord,
-        }), MINTED_PASSPHRASE);
-        const options = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data }),
-        };
-        const { status } = await fetch(`${W3RDL3_API_URL}/minted`, options);
-        if (status === 200) {
-          const hex = `0x${stringToHex(correctWord.toLowerCase())}`;
-          const isMinted = await erc20Contract.wordMap(hex);
-          if (isMinted) {
+        const hex = `0x${stringToHex(correctWord.toLowerCase())}`;
+        const isMinted = await erc20Contract.wordMap(hex);
+
+        if (!isMinted) {
+          const data = encryptWithAES(JSON.stringify({
+            wallet_address: signerAddress,
+            word: correctWord,
+          }), MINTED_PASSPHRASE);
+          const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data }),
+          };
+          const { status } = await fetch(`${W3RDL3_API_URL}/minted`, options);
+          if (status === 200) {
             const mintWordRes = await erc20Contract.mintWord(tries, hex);
             const openseaNftId = ethers.utils.formatUnits(mintWordRes.value, 0);
             setNftId(openseaNftId);
@@ -294,7 +295,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
         } else if (e.code && e.code !== 4001) {
           setError(`${e.message} (code ${e.code})`);
         } else {
-          setError(`Something went wrong. Please open the devtools console for errors. ${JSON.stringify(e)}`);
+          setError(`Something went wrong. Error: ${JSON.stringify(e)}`);
         }
         setPlaySession({});
       } finally {
