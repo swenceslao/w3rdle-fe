@@ -62,6 +62,8 @@ const stringToHex = (str) => {
 };
 
 function Game({ darkMode, playSession, setPlaySession }) {
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const { tries, lost } = useContext(GameContext);
   const [ongoingMintPrice, setOngoingMintPrice] = useState(0.0);
   const [metamaskText, setMetamaskText] = useState('');
@@ -116,53 +118,61 @@ function Game({ darkMode, playSession, setPlaySession }) {
     try {
       if (provider) {
         console.log('MetaMask is installed!');
-        await window.ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{
-            eth_accounts: {},
-          }],
-        });
-        await provider.send('eth_requestAccounts', []);
-        const ethSigner = await provider.getSigner();
-        const ethSignerAddress = await ethSigner.getAddress();
-        setSignerAddress(ethSignerAddress);
+        const { chainId } = await provider.getNetwork();
+        if ((isProduction && chainId === 137) || (!isProduction && chainId === 1337)) {
+          // is on prod and provider network ID is polygon, OR
+          // is on dev and provider netowrk ID is ganache
+          setError('');
+          await window.ethereum.request({
+            method: 'wallet_requestPermissions',
+            params: [{
+              eth_accounts: {},
+            }],
+          });
+          await provider.send('eth_requestAccounts', []);
+          const ethSigner = await provider.getSigner();
+          const ethSignerAddress = await ethSigner.getAddress();
+          setSignerAddress(ethSignerAddress);
 
-        const erc20 = new ethers.Contract(
-          CONTRACT_ADDRESS,
-          W3rdl3.abi,
-          ethSigner,
-        );
+          const erc20 = new ethers.Contract(
+            CONTRACT_ADDRESS,
+            W3rdl3.abi,
+            ethSigner,
+          );
 
-        setErc20Contract(erc20);
+          setErc20Contract(erc20);
 
-        const mintPriceHex = await erc20.ongoingMintPrice();
-        const readableMintPrice = ethers.utils.formatEther(mintPriceHex);
-        const floatMintPrice = parseFloat(readableMintPrice);
-        setOngoingMintPrice(floatMintPrice);
-        setMetamaskText('MetaMask window open');
+          const mintPriceHex = await erc20.ongoingMintPrice();
+          const readableMintPrice = ethers.utils.formatEther(mintPriceHex);
+          const floatMintPrice = parseFloat(readableMintPrice);
+          setOngoingMintPrice(floatMintPrice);
+          setMetamaskText('MetaMask window open');
 
-        const register = await erc20.register({
-          value: floatMintPrice * WEI,
-        });
-        setAwaitingRegister(true);
+          const register = await erc20.register({
+            value: floatMintPrice * WEI,
+          });
+          setAwaitingRegister(true);
 
-        const wait = await register.wait();
-        const {
-          blockHash,
-          blockNumber,
-          transactionHash: txHash,
-        } = wait;
-        setAwaitingRegister(false);
-
-        setPlaySession({
-          sessionStarted: getUnixTime(new Date()),
-          playerAddress: ethSignerAddress,
-          blockInfo: {
+          const wait = await register.wait();
+          const {
             blockHash,
             blockNumber,
-            txHash,
-          },
-        });
+            transactionHash: txHash,
+          } = wait;
+          setAwaitingRegister(false);
+
+          setPlaySession({
+            sessionStarted: getUnixTime(new Date()),
+            playerAddress: ethSignerAddress,
+            blockInfo: {
+              blockHash,
+              blockNumber,
+              txHash,
+            },
+          });
+        } else {
+          setError('Please switch to Polygon (MATIC) network before playing.');
+        }
       } else {
         setMetamaskText('MetaMask unavailable');
       }
@@ -365,7 +375,7 @@ function Game({ darkMode, playSession, setPlaySession }) {
                 {' '}
                 {ongoingMintPrice}
                 {' '}
-                ETH
+                MATIC
               </Typography>
             )}
             <MetaMaskButton
